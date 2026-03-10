@@ -1,165 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<body>
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
-    <link rel="stylesheet" href="domain/assets/css/main.css">
-    <script src="domain/assets/js/catgirl.js"></script>
-    <link rel="icon" href="domain/assets/media/favicon.webp">
-    <title id="title-name"> dxv3 </title>
-    <meta id="meta-name" property="og:title" content="dxv3 
-⋋ō_ō`">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://perc.life">
-    <meta id="meta-image" property="og:image" content="https://cdn.discordapp.com/attachments/1144697694951055453/1180912692232462356/IMG_0662.jpg?ex=657f25a6&is=656cb0a6&hm=207111e728acc36e3411f6b3af753103a40495d392b2faa792f3e1a9d24bab19&">
-    <meta property="og:audio" content="https://www.youtube.com/watch?v=xDzZlIbUPm4" />
-    <meta content="dxv3" property='og:site_name'>
-    <meta name="theme-color" content="#2f3136">
-    </div>
-    </div>
-    </div>
-
-</body>
-
-</html>
-
-<script>
-    var mySong = document.getElementById("mySong");
-    var icon = document.getElementById("icon");
-
-    icon.onclick = function() {
-        if (mySong.paused) {
-            mySong.play();
-            icon.src = "pause.png";
-        } else {
-            mySong.pause();
-            icon.src = "play.png";
-        }
-    }
-</script>
-
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: roboto, sans-serif;
-        font-size: 16px;
-        line-height: 1.5;
-        height: 100%;
-        overflow-x: hidden;
-        overflow-y: hidden;
-        background: radial-gradient(ellipse at bottom, #3f3f3f 0%, #090A0F 100%);
-        background-image: url(domain/assets/media/background.png);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-attachment: fixed;
-    }
-
-    .wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        min-height: 100vh;
-        gap: 30px;
-    }
-
-    @media(max-width:730px) {
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: roboto, sans-serif;
-            font-size: 16px;
-            line-height: 1.5;
-            height: 100%;
-            overflow-x: hidden;
-            background: radial-gradient(ellipse at bottom, #301934 0%, #090A0F 100%);
-            background-image: url(domain/assets/media/background.png);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-attachment: fixed;
-            zoom: 80%;
-        }
-        .wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            min-height: 100vh;
-            gap: 30px;
-        }
-    }
-</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.lanyard.rest; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com 'unsafe-inline'; media-src 'self' data: blob:; img-src 'self' data: https:;">
+    <title>dxv3</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat&family=Kalam&family=Shadows+Into+Light&family=Permanent+Marker&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-</head>
-</head>
-</head>
-
-
 <body>
-    <div class="wrapper">
-        <script>
-            invoke("541388135712423936", "card")
-        </script>
-        <div class="card">
-            <div id="card-title" style="color: #fff;" class="card-title"></div>
-            <div id="card-user-profile" style="color: #fff;" class="user-profile">
-                <div class="Profile-pic">
-                    <img title="click to play music" class="card-pfp" id="pfp" src="domain/assets/loader.gif" alt="">
-                    <div class="card-activity-dot" style="color: #fff;" id="activity-dot" aria-label="Unknown"></div>
+    <div id="noise"></div>
+    
+    <div id="bg-container">
+        <video id="bg-video" autoplay loop muted playsinline aria-hidden="true"></video>
+        <img id="bg-img" aria-hidden="true" alt="">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <div class="glass-panel" id="main-panel">
+            <div class="profile-wrapper">
+                <div class="pfp-container">
+                    <img src="https://thehillz.xyz/images/profile.gif" onerror="this.src='https://ui-avatars.com/api/?name=dxv3&background=random&color=fff&size=200'" alt="Avatar" class="profile-pic" id="pfp">
                 </div>
-                <div class="user-info">
-                    <img src="https://cdn3.emoji.gg/emojis/1895-subscriber-nitro-animated.gif" height="20" width="20">
-                    <img src="https://i.redd.it/qq911bvdqwu51.gif" height="20" width="20">
-                    <img src="https://cdn3.emoji.gg/emojis/3773-active-developer-badge-animated.gif" height="20" width="20">
-                    
-                    <div class="card-username" style="color: #fff;" id="username"></div>
-                    <div class="card-status" style="color: #fff;" id="status"></div>
-                    <div class="card-status2" style="color: #fff;" id="status2"></div>
-                    <div class="connections">
-                        <a id="connection-username" title="" href="https://discord.com/users/541388135712423936/"><img class="connection-icon" src="domain/assets/assets/connections/discord.svg" alt=""></a>
-                        <a title="dxv333" href="https://tiktok.com/@dxv333"><img class="connection-icon" src="domain/assets/assets/connections/tiktok.svg" alt=""></a>
-                        <a title="GitHub" href="https://github.com/dxv3"><img class="connection-icon" src="domain/assets/assets/connections/spotify.png" alt=""></a>
+            </div>
+            
+            <h1 class="username">
+                <span id="char-1" class="char-span">d</span><span id="char-2" class="char-span">x</span><span id="char-3" class="char-span">v</span><span id="char-4" class="char-span">3</span>
+                <i data-lucide="badge-check" class="verified-icon"></i>
+            </h1>
+            
+            <div class="badges">
+                <span class="badge"><i data-lucide="zap"></i> dev</span>
+                <span class="badge"><i data-lucide="crown"></i> aba king</span>
+                <span class="badge"><i data-lucide="smile"></i> hello</span>
+            </div>
+
+            <p class="status-container">
+                <i data-lucide="terminal" class="status-icon"></i>
+                <span class="status-text"><span class="typewriter" id="typewriter"></span><span class="cursor"></span></span>
+            </p>
+
+            <div class="social-grid">
+                <a href="https://tiktok.com/@dxv333" class="social-card" target="_blank" rel="noopener">
+                    <i data-lucide="music-2"></i>
+                    <div class="card-info">
+                        <span class="title">TikTok</span>
+                        <span class="handle">@dxv333</span>
+                    </div>
+                    <i data-lucide="arrow-up-right" class="arrow"></i>
+                </a>
+                <a href="https://discord.com/users/541388135712423936" class="social-card" target="_blank" rel="noopener">
+                    <i data-lucide="message-square"></i>
+                    <div class="card-info">
+                        <span class="title">Discord</span>
+                        <span class="handle">dxv3</span>
+                    </div>
+                    <i data-lucide="arrow-up-right" class="arrow"></i>
+                </a>
+                <a href="https://github.com/dxv3" class="social-card" target="_blank" rel="noopener">
+                    <i data-lucide="github"></i>
+                    <div class="card-info">
+                        <span class="title">GitHub</span>
+                        <span class="handle">dxv3</span>
+                    </div>
+                    <i data-lucide="arrow-up-right" class="arrow"></i>
+                </a>
+                <a href="https://www.roblox.com/users/103800725/profile" class="social-card" target="_blank" rel="noopener">
+                    <i data-lucide="gamepad-2"></i>
+                    <div class="card-info">
+                        <span class="title">Roblox</span>
+                        <span class="handle">dxv3333</span>
+                    </div>
+                    <i data-lucide="arrow-up-right" class="arrow"></i>
+                </a>
+            </div>
+            
+            <div class="player-widget">
+                <div class="player-cover">
+                    <i data-lucide="disc-3" class="spin-slow"></i>
+                </div>
+                <div class="player-info">
+                    <div class="track-title" id="track-name">click anywhere to load</div>
+                    <div class="player-controls">
+                        <button id="prev-track" class="ctrl-btn"><i data-lucide="skip-back"></i></button>
+                        <button id="mute-toggle" class="ctrl-btn"><i data-lucide="volume-2" id="vol-icon"></i></button>
+                        <button id="next-track" class="ctrl-btn"><i data-lucide="skip-forward"></i></button>
+                    </div>
+                </div>
+                <div class="audio-visualizer inactive" id="visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="discord-column">
+            <div class="character-container" id="character-container">
+                <img id="character-gif" src="index.html" alt="character" draggable="false">
+            </div>
+
+            <div class="glass-panel discord-panel" id="discord-panel">
+                <div class="discord-top">
+                    <div class="discord-avatar-container">
+                        <img id="dc-avatar" src="index.html" alt="Discord Avatar">
+                        <div id="dc-status" class="status-dot"></div>
+                    </div>
+                    <div class="discord-names">
+                        <h2 id="dc-display-name">loading...</h2>
+                        <p id="dc-username">@username</p>
+                    </div>
+                </div>
+                
+                <div class="discord-activity" id="dc-activity" style="display: none;">
+                    <h3 class="activity-label" id="dc-activity-label">Playing a game</h3>
+                    <div class="activity-content">
+                        <img id="dc-activity-img" src="index.html" alt="Activity">
+                        <div class="activity-details">
+                            <p id="dc-activity-name" class="act-name"></p>
+                            <p id="dc-activity-details" class="act-details"></p>
+                            <p id="dc-activity-state" class="act-state"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discord-activity" id="dc-spotify" style="display: none;">
+                    <h3 class="activity-label">Listening to Spotify</h3>
+                    <div class="activity-content">
+                        <img id="dc-spotify-img" src="index.html" alt="Album Art">
+                        <div class="activity-details">
+                            <p id="dc-spotify-song" class="act-name"></p>
+                            <p id="dc-spotify-artist" class="act-details"></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card1">
-            <script>
-                setPresence()
-            </script>
-            <div id="card1-title" style="color: #fff;" class="card-title"></div>
-            <div id="card1-user-profile" style="color: #fff;" class="user-profile">
-                <div class="Profile-pic">
-                    <img class="card1-pfp" src="domain/assets/loader.gif" id="pfp" alt="">
-                </div>
-                <div class="user-info">
-                    <div class="card1-username" style="color: #fff;" id="username"></div>
-                    <div class="card1-status" style="color: #fff;" id="status"></div>
-                    <div class="card1-status2" style="color: #fff;" id="status2"></div>
-                    <div class="spotify-outerbar">
-                        <div class="card1-spotify-innerbar" id="spotify-innerbar"></div>
-                    </div>
-                    <div class="spotify-time">
-                        <div class="card1-spotify-time-start" id="spotify-time-start"></div>
-                        <div class="card1-spotify-time-end" id="spotify-time-end"></div>
-                    </div>
-                </div>
-            </div>
+    </main>
+
+    <div id="entry-overlay">
+        <div class="entry-content">
+            <i data-lucide="fingerprint" class="entry-icon"></i>
+            <p>[ click anywhere ]</p>
         </div>
     </div>
 
-    <script src="domain/assets/js/main.js"></script>
-    <script src="domain/assets/js/cursor.js"></script>
-    <script src="domain/assets/js/enter.js"></script>
-
+    <script src="data.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
