@@ -30,7 +30,6 @@ window.siteFiles = {
     "Made Sum Plans_spotdown.org.mp3",
     "Maui Wowie_spotdown.org.mp3",
     "Money_spotdown.org.mp3",
-    "NORMAL_spotdown.org.mp3",
     "One_spotdown.org.mp3",
     "Paris_spotdown.org.mp3",
     "Rendezvous (feat. Yeat)_spotdown.org.mp3",

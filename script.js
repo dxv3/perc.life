@@ -1,12 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialize Lucide icons
     lucide.createIcons();
 
     const overlay = document.getElementById("entry-overlay");
     const mainPanel = document.getElementById("main-panel");
     const bgVideo = document.getElementById("bg-video");
-    
-    // Font cycler for dxv3
+
     const fonts = ["'Patrick Hand', cursive", "'Caveat', cursive", "'Kalam', cursive", "'Shadows Into Light', cursive", "'Permanent Marker', cursive", "'Outfit', sans-serif"];
     const charSpans = ["char-1","char-2","char-3","char-4"].map(id => document.getElementById(id)).filter(Boolean);
     if(charSpans.length > 0) {
@@ -15,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 350);
     }
 
-    // Typewriter
     const phrases = ["yo", "FullStack Devin", "i <3 wireshark", "gurt"];
     const typewriterEl = document.getElementById("typewriter");
     let phraseIndex = 0;
@@ -53,25 +50,21 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(renderTypewriter, delay);
     }
 
-    // Audio Player
     let audioInstance = null;
     let isMuted = false;
-    
-    // dynamically load tracks and shuffle them to start on a random song
+
     let tracks = window.siteFiles && window.siteFiles.tracks ? window.siteFiles.tracks.map(f => 'music/' + f) : [];
     if (tracks.length > 0) {
         tracks = tracks.sort(() => Math.random() - 0.5);
     }
     let currentTrackIndex = 0;
     
-    // Setup random profile picture early so it loads fast
     const pfp = document.getElementById("pfp");
     if (window.siteFiles && window.siteFiles.images && window.siteFiles.images.length > 0) {
         const rImg = window.siteFiles.images[Math.floor(Math.random() * window.siteFiles.images.length)];
         pfp.src = 'images/' + rImg;
     }
     
-    // Setup random character gif
     const charGif = document.getElementById("character-gif");
     if (window.siteFiles && window.siteFiles.characters && window.siteFiles.characters.length > 0) {
         const rChar = window.siteFiles.characters[Math.floor(Math.random() * window.siteFiles.characters.length)];
@@ -114,16 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
         animationFrameId = requestAnimationFrame(renderBass);
         
         analyser.getByteFrequencyData(dataArray);
-        
-        // Sum the absolute lowest frequencies (bass is typically in first 5 bins here)
+
         let sum = 0;
         const bassBins = 5;
         for (let i = 0; i < bassBins; i++) {
             sum += dataArray[i];
         }
         const avgBass = sum / bassBins;
-        
-        // Threshold for bass hit (max is 255)
+
         const pfpContainer = document.querySelector(".pfp-container");
         const panel = document.getElementById("main-panel");
         
@@ -230,8 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         spinDisc.classList.remove("active");
         bassVisualsActive = false;
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        
-        // Reset styles properly when stopping
+
         document.body.classList.remove("bass-flash-bg");
         const pfp = document.querySelector(".pfp-container");
         if(pfp) {
@@ -292,7 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener("click", handleEntry);
 
-    // Lanyard Discord Modal API Integration
     async function updateDiscordStatus() {
         try {
             const res = await fetch("https://api.lanyard.rest/v1/users/541388135712423936");
@@ -300,18 +289,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!payload || !payload.data) return;
             const data = payload.data;
 
-            // set avatar and status
             const avatarId = data.discord_user.avatar;
             const userId = data.discord_user.id;
             const avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${avatarId}.webp?size=256`;
             document.getElementById("dc-avatar").src = avatarUrl;
             document.getElementById("dc-status").className = `status-dot status-${data.discord_status}`;
 
-            // set names
             document.getElementById("dc-display-name").textContent = data.discord_user.display_name || data.discord_user.username;
             document.getElementById("dc-username").textContent = "@" + data.discord_user.username;
 
-            // --- Game / Rich Presence activity (type 0, 1, 2, 3 — NOT type 4 custom status) ---
             const actContainer = document.getElementById("dc-activity");
             const playAct = data.activities && data.activities.find(a => a.type !== 4 && a.type !== 2);
 
@@ -339,7 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 actContainer.style.display = "none";
             }
 
-            // --- Spotify — shown independently, can coexist with game ---
             const spotifyContainer = document.getElementById("dc-spotify");
             if (data.listening_to_spotify && data.spotify) {
                 spotifyContainer.style.display = "block";
@@ -356,6 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     updateDiscordStatus();
-    setInterval(updateDiscordStatus, 5000); // 5 sec interval
+    setInterval(updateDiscordStatus, 5000);
 
 });

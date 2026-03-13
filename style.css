@@ -22,7 +22,6 @@
     box-sizing: border-box;
 }
 
-/* Bass Reactive Flash */
 .bass-flash-bg #bg-container {
     background: rgba(160, 196, 255, 0.25) !important;
 }
@@ -41,7 +40,6 @@ a, button {
     cursor: pointer;
 }
 
-/* Background Noise */
 #noise {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -51,7 +49,6 @@ a, button {
     background: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
 }
 
-/* Background engine */
 #bg-container {
     position: fixed;
     inset: 0;
@@ -91,7 +88,6 @@ a, button {
     100% { transform: translate(60px, 60px) scale(1.15); }
 }
 
-/* Entry Overlay */
 #entry-overlay {
     position: fixed;
     inset: 0;
@@ -137,7 +133,6 @@ a, button {
     pointer-events: none;
 }
 
-/* Main Layout */
 .container {
     min-height: 100vh;
     height: auto;
@@ -177,7 +172,6 @@ a, button {
     transform: translateY(0) scale(1);
 }
 
-/* Profile */
 .profile-wrapper {
     position: relative;
     margin-bottom: 1.2rem;
@@ -212,7 +206,6 @@ a, button {
     100% { transform: rotate(-360deg); }
 }
 
-/* Text */
 .username {
     font-size: 2.2rem;
     font-family: var(--font-sketch);
@@ -301,7 +294,6 @@ a, button {
 
 @keyframes blink { 50% { opacity: 0; } }
 
-/* Social Grid */
 .social-grid {
     display: flex;
     flex-direction: column;
@@ -390,7 +382,6 @@ a, button {
     color: var(--text-main);
 }
 
-/* Player Widget */
 .player-widget {
     margin-top: 1.5rem;
     width: 100%;
@@ -504,7 +495,6 @@ a, button {
     100% { height: 20px; }
 }
 
-/* Character Gif */
 .character-container {
     display: flex;
     align-items: flex-end;
@@ -535,7 +525,6 @@ a, button {
     filter: drop-shadow(0 8px 20px rgba(160, 196, 255, 0.3));
 }
 
-/* Discord Panel */
 .discord-column {
     display: flex;
     flex-direction: column;
@@ -678,7 +667,6 @@ a, button {
     .status-container { font-size: 0.8rem; }
 }
 
-/* Smooth Floating Animations */
 @keyframes floatUpHover {
     0%, 100% { translate: 0 0; }
     50% { translate: 0 -8px; }
@@ -704,7 +692,6 @@ a, button {
     50% { scale: 1.02; }
 }
 
-/* Applying distinct smooth animations to inner elements to prevent overriding entrance logic */
 .profile-wrapper {
     animation: floatUpHover 6s ease-in-out infinite;
 }
