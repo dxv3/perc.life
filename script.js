@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 350);
     }
 
-    const phrases = ["yo", "FullStack Devin", "i <3 wireshark", "gurt"];
+    const phrases = ["yo", "FullStack Devin", "i <3 claude", "gurt"];
     const typewriterEl = document.getElementById("typewriter");
     let phraseIndex = 0;
     let charIndex = 0;
