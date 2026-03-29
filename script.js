@@ -284,41 +284,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function updateDiscordStatus() {
         try {
-            const res  = await fetch("https://presence.perc.life/presence");
-            const data = await res.json();
+            const res = await fetch("https://api.lanyard.rest/v1/users/541388135712423936");
+            const payload = await res.json();
+            if (!payload || !payload.data) return;
+            const data = payload.data;
 
-            if (data.avatarUrl) document.getElementById("dc-avatar").src = data.avatarUrl;
-            document.getElementById("dc-status").className = `status-dot status-${data.status}`;
-            document.getElementById("dc-display-name").textContent = data.displayName || "dxv3";
-            document.getElementById("dc-username").textContent = "@" + (data.username || "dxv3");
+            const avatarId = data.discord_user.avatar;
+            const userId = data.discord_user.id;
+            const avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${avatarId}.webp?size=256`;
+            document.getElementById("dc-avatar").src = avatarUrl;
+            document.getElementById("dc-status").className = `status-dot status-${data.discord_status}`;
+
+            document.getElementById("dc-display-name").textContent = data.discord_user.display_name || data.discord_user.username;
+            document.getElementById("dc-username").textContent = "@" + data.discord_user.username;
 
             const actContainer = document.getElementById("dc-activity");
-            if (data.activity) {
+            const playAct = data.activities && data.activities.find(a => a.type !== 4 && a.type !== 2);
+
+            if (playAct) {
                 actContainer.style.display = "block";
-                const labelMap = { 0: "Playing a game", 1: "Streaming", 3: "Watching", 5: "Competing in" };
-                document.getElementById("dc-activity-label").textContent = labelMap[data.activity.type] || "Playing a game";
-                document.getElementById("dc-activity-name").textContent    = data.activity.name    || "";
-                document.getElementById("dc-activity-details").textContent = data.activity.details || "";
-                document.getElementById("dc-activity-state").textContent   = data.activity.state   || "";
-                document.getElementById("dc-activity-img").src = data.activity.imageUrl
-                    || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.activity.name)}&background=0d0d0d&color=fff`;
+                let labelStr = "Playing a game";
+                if (playAct.type === 3) labelStr = "Watching";
+
+                document.getElementById("dc-activity-label").textContent = labelStr;
+                document.getElementById("dc-activity-name").textContent = playAct.name;
+                document.getElementById("dc-activity-details").textContent = playAct.details || "";
+                document.getElementById("dc-activity-state").textContent = playAct.state || "";
+
+                let imgSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(playAct.name)}&background=0d0d0d&color=fff`;
+                if (playAct.assets && playAct.assets.large_image) {
+                    let lImage = playAct.assets.large_image;
+                    if (lImage.startsWith("mp:external/")) {
+                        imgSrc = "https://media.discordapp.net/external/" + lImage.replace("mp:external/", "");
+                    } else {
+                        imgSrc = `https://cdn.discordapp.com/app-assets/${playAct.application_id}/${lImage}.webp`;
+                    }
+                }
+                document.getElementById("dc-activity-img").src = imgSrc;
             } else {
                 actContainer.style.display = "none";
             }
 
             const spotifyContainer = document.getElementById("dc-spotify");
-            if (data.spotify) {
+            if (data.listening_to_spotify && data.spotify) {
                 spotifyContainer.style.display = "block";
-                document.getElementById("dc-spotify-img").src    = data.spotify.albumArtUrl || "";
-                document.getElementById("dc-spotify-song").textContent   = data.spotify.song   || "";
-                document.getElementById("dc-spotify-artist").textContent = data.spotify.artist || "";
+                document.getElementById("dc-spotify-img").src = data.spotify.album_art_url;
+                document.getElementById("dc-spotify-song").textContent = data.spotify.song;
+                document.getElementById("dc-spotify-artist").textContent = data.spotify.artist;
             } else {
                 spotifyContainer.style.display = "none";
             }
 
         } catch (err) {
-            console.warn("Presence API unreachable — showing offline");
-            document.getElementById("dc-status").className = "status-dot status-offline";
+            console.warn("Failed fetching Lanyard API");
         }
     }
     
