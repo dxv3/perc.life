@@ -371,7 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
         { label: "Favorites", key: "favorites", accent: "#f5a3c7" },
         { label: "Upvotes", key: "upVotes", accent: "#23a559" },
         { label: "Downvotes", key: "downVotes", accent: "#f23f43" },
-        { label: "Like Ratio", key: "__ratio", accent: "#fcfcfc" }
+        { label: "Like Ratio", key: "__ratio", accent: "#fcfcfc" },
+        { label: "Active Servers", key: "servers", accent: "#ffd166" },
+        { label: "Avg Players/Server", key: "__avgPerServer", accent: "#06d6a0" }
     ];
     const chartDefs = [
         { title: "Live Players", key: "playing", color: "#a0c4ff" },
@@ -381,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n >= 1e3 ? (n / 1e3).toFixed(1) + "K" : n;
     const deltaFmt = (cur, prev) => {
-        if (prev === 0) return { text: "N/A", cls: "flat" };
+        if (cur == null || prev == null || prev === 0) return { text: "N/A", cls: "flat" };
         const pct = ((cur - prev) / prev * 100).toFixed(1);
         if (pct > 0) return { text: "↑ " + pct + "% · 24h", cls: "up" };
         if (pct < 0) return { text: "↓ " + Math.abs(pct) + "% · 24h", cls: "down" };
@@ -469,7 +471,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         renderCharts(filtered);
-        rangeLabel.textContent = filtered.length + " snapshots shown · " + allData.length + " total · every 5 min";
+        const peak = Math.max(...filtered.map(d => d.playing));
+        rangeLabel.textContent = filtered.length + " snapshots shown · peak " + fmt(peak) + " players · " + allData.length + " total · every 5 min";
     }
 
     function renderStatsGrid(latest, dayAgo) {
@@ -480,6 +483,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `<div class="stat">
                     <div class="label"><span class="dot" style="background:${m.accent}"></span>${m.label}</div>
                     <div class="value">${ratio}</div>
+                </div>`;
+            }
+            if (m.key === "__avgPerServer") {
+                const avg = latest.servers > 0 ? (latest.playing / latest.servers).toFixed(1) : "N/A";
+                return `<div class="stat">
+                    <div class="label"><span class="dot" style="background:${m.accent}"></span>${m.label}</div>
+                    <div class="value">${avg}</div>
                 </div>`;
             }
             const d = deltaFmt(latest[m.key], dayAgo[m.key]);
