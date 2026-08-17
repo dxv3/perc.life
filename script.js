@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chartLibPromise) return chartLibPromise;
         chartLibPromise = new Promise((resolve, reject) => {
             const s = document.createElement("script");
-            s.src = "https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js";
+            s.src = "https://unpkg.com/chart.js@4.5.1/dist/chart.umd.min.js";
             s.onload = resolve;
             s.onerror = reject;
             document.head.appendChild(s);
