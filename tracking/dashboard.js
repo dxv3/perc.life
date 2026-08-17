@@ -182,9 +182,45 @@ const server = http.createServer((req, res) => {
   .section-head {
     display: flex; align-items: baseline; justify-content: space-between;
     margin: 8px 0 16px;
+    flex-wrap: wrap; gap: 10px;
   }
   .section-title { font-family: var(--font-sketch); font-size: 1.4rem; letter-spacing: 0.5px; color: var(--text-main); }
-  .section-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .section-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
+
+  .range-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+  .range-pill {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--card-bg); color: var(--text-muted);
+    cursor: pointer; transition: var(--transition);
+  }
+  .range-pill:hover { border-color: rgba(255,255,255,0.3); color: var(--text-main); }
+  .range-pill.active {
+    background: rgba(160,196,255,0.12); border-color: rgba(160,196,255,0.4); color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  .custom-range {
+    display: none; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+    margin: 12px 0 16px; padding: 14px 18px;
+    background: var(--card-bg); border: 1px solid var(--panel-border); border-radius: 16px;
+  }
+  .custom-range.show { display: flex; }
+  .custom-range label {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; display: flex; flex-direction: column; gap: 5px;
+  }
+  .custom-range input[type="datetime-local"] {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 7px 9px; color: var(--text-main); font-family: var(--font-mono); font-size: 12px;
+    color-scheme: dark;
+  }
+  .custom-range button {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 8px 18px; border-radius: 20px; border: 1px solid rgba(160,196,255,0.4);
+    background: rgba(160,196,255,0.12); color: var(--accent); cursor: pointer; transition: var(--transition);
+  }
+  .custom-range button:hover { background: rgba(160,196,255,0.2); }
 
   .chart-card {
     background: var(--card-bg);
@@ -243,8 +279,14 @@ const server = http.createServer((req, res) => {
 
     <div class="section-head">
       <div class="section-title">Trends</div>
-      <div class="section-sub" id="rangeLabel"></div>
+      <div class="range-controls" id="rangeControls"></div>
     </div>
+    <div class="custom-range" id="customRange">
+      <label>From <input type="datetime-local" id="customFrom"></label>
+      <label>To <input type="datetime-local" id="customTo"></label>
+      <button id="applyCustom">Apply</button>
+    </div>
+    <div class="section-sub" id="rangeLabel"></div>
     <div id="charts"></div>
 
     <div class="section-head" style="margin-top:32px">
@@ -279,7 +321,85 @@ const chartDefs = [
   { title: 'Favorites', key: 'favorites', color: '#f5a3c7' }
 ];
 
+const TIMEFRAMES = [
+  { key: '1h', label: '1H', ms: 3600e3 },
+  { key: '6h', label: '6H', ms: 6 * 3600e3 },
+  { key: '1d', label: '1D', ms: 86400e3 },
+  { key: '3d', label: '3D', ms: 3 * 86400e3 },
+  { key: '7d', label: '7D', ms: 7 * 86400e3 },
+  { key: '14d', label: '14D', ms: 14 * 86400e3 },
+  { key: '28d', label: '28D', ms: 28 * 86400e3 },
+  { key: '56d', label: '56D', ms: 56 * 86400e3 },
+  { key: '90d', label: '90D', ms: 90 * 86400e3 }
+];
+
 let charts = null;
+let allData = [];
+let activeRange = { type: 'preset', key: '90d' };
+let controlsBuilt = false;
+
+function setActiveRangeKey(key) {
+  document.querySelectorAll('.range-pill').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+}
+
+function renderRangeControls() {
+  if (controlsBuilt) return;
+  controlsBuilt = true;
+  const el = document.getElementById('rangeControls');
+  el.innerHTML = TIMEFRAMES.map(tf => \`<button class="range-pill" data-key="\${tf.key}">\${tf.label}</button>\`).join('')
+    + '<button class="range-pill" data-key="custom">CUSTOM</button>';
+
+  el.querySelectorAll('.range-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      if (key === 'custom') {
+        document.getElementById('customRange').classList.toggle('show');
+        setActiveRangeKey('custom');
+        return;
+      }
+      document.getElementById('customRange').classList.remove('show');
+      activeRange = { type: 'preset', key };
+      setActiveRangeKey(key);
+      applyRange();
+    });
+  });
+
+  document.getElementById('applyCustom').addEventListener('click', () => {
+    const fromVal = document.getElementById('customFrom').value;
+    const toVal = document.getElementById('customTo').value;
+    if (!fromVal || !toVal) return;
+    activeRange = { type: 'custom', from: new Date(fromVal).getTime(), to: new Date(toVal).getTime() };
+    setActiveRangeKey('custom');
+    applyRange();
+  });
+}
+
+function filterByRange(data) {
+  if (!data.length) return data;
+  if (activeRange.type === 'custom') {
+    if (activeRange.from == null || activeRange.to == null) return data;
+    return data.filter(d => {
+      const t = new Date(d.timestamp).getTime();
+      return t >= activeRange.from && t <= activeRange.to;
+    });
+  }
+  const tf = TIMEFRAMES.find(t => t.key === activeRange.key);
+  if (!tf) return data;
+  const cutoff = Date.now() - tf.ms;
+  return data.filter(d => new Date(d.timestamp).getTime() >= cutoff);
+}
+
+function applyRange() {
+  if (!allData.length) return;
+  const filtered = filterByRange(allData);
+  if (!filtered.length) {
+    renderCharts(allData.slice(-1));
+    document.getElementById('rangeLabel').textContent = 'no snapshots in this range · showing latest point · ' + allData.length + ' total';
+    return;
+  }
+  renderCharts(filtered);
+  document.getElementById('rangeLabel').textContent = filtered.length + ' snapshots shown · ' + allData.length + ' total · every 5 min';
+}
 
 function renderStatsGrid(latest, dayAgo) {
   document.getElementById('statsGrid').innerHTML = metrics.map(m => {
@@ -352,6 +472,7 @@ function renderHistoryTable(data) {
 }
 
 function render(data) {
+  allData = data;
   if (!data.length) {
     document.getElementById('statsGrid').innerHTML = '<div class="empty">no data yet — check back after the next poll cycle</div>';
     return;
@@ -361,10 +482,11 @@ function render(data) {
   const dayAgo = data.find(d => new Date(latest.timestamp) - new Date(d.timestamp) >= 86400000) || data[0];
 
   document.getElementById('updated').textContent = 'Last updated ' + new Date(latest.timestamp).toLocaleString();
-  document.getElementById('rangeLabel').textContent = data.length + ' snapshots · every 5 min';
 
   renderStatsGrid(latest, dayAgo);
-  renderCharts(data);
+  renderRangeControls();
+  setActiveRangeKey(activeRange.key || 'custom');
+  applyRange();
   renderHistoryTable(data);
   if (window.lucide) lucide.createIcons();
 }
