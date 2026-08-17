@@ -664,6 +664,180 @@ a, button {
 .act-details { color: var(--text-muted); }
 .act-state { color: var(--text-muted); font-size: 0.75rem !important; }
 
+/* ---- Tracking overlay (in-page, no navigation) ---- */
+
+.tracking-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    background: rgba(5, 5, 5, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tracking-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.tracking-overlay-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+
+.tracking-overlay.show .tracking-overlay-inner {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tracking-close {
+    position: fixed;
+    top: 24px; right: 24px;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 50%;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 2;
+}
+.tracking-close:hover { color: var(--text-main); border-color: rgba(255,255,255,0.3); background: var(--card-hover); }
+.tracking-close i { width: 18px; height: 18px; }
+
+.tracking-overlay .hero {
+    margin-bottom: 32px;
+    max-width: none;
+    width: 100%;
+    align-items: flex-start;
+    padding: 2rem 2.2rem;
+}
+.tracking-overlay .hero h1 {
+    font-family: var(--font-sketch);
+    font-weight: 400;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+.tracking-overlay .hero .meta {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 14px;
+}
+.tracking-overlay .hero .meta i { width: 14px; height: 14px; color: var(--accent); }
+
+.tracking-overlay .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 44px;
+}
+.tracking-overlay .stat {
+    background: var(--card-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    padding: 20px 22px;
+    transition: var(--transition);
+}
+.tracking-overlay .stat:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.25); }
+.tracking-overlay .stat .label {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 6px;
+}
+.tracking-overlay .stat .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.tracking-overlay .stat .value { font-size: 30px; font-weight: 800; margin-top: 10px; color: var(--text-main); letter-spacing: -0.01em; }
+.tracking-overlay .stat .delta { font-family: var(--font-mono); font-size: 12px; margin-top: 8px; font-weight: 600; }
+.tracking-overlay .delta.up { color: #23a559; }
+.tracking-overlay .delta.down { color: #f23f43; }
+.tracking-overlay .delta.flat { color: var(--text-muted); }
+
+.tracking-overlay .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 8px 0 16px; flex-wrap: wrap; gap: 10px;
+}
+.tracking-overlay .section-title { font-family: var(--font-sketch); font-size: 1.4rem; letter-spacing: 0.5px; color: var(--text-main); }
+.tracking-overlay .section-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
+
+.tracking-overlay .range-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.tracking-overlay .range-pill {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--card-bg); color: var(--text-muted);
+    cursor: pointer; transition: var(--transition);
+}
+.tracking-overlay .range-pill:hover { border-color: rgba(255,255,255,0.3); color: var(--text-main); }
+.tracking-overlay .range-pill.active {
+    background: rgba(160,196,255,0.12); border-color: rgba(160,196,255,0.4); color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.tracking-overlay .custom-range {
+    display: none; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+    margin: 12px 0 16px; padding: 14px 18px;
+    background: var(--card-bg); border: 1px solid var(--panel-border); border-radius: 16px;
+}
+.tracking-overlay .custom-range.show { display: flex; }
+.tracking-overlay .custom-range label {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; display: flex; flex-direction: column; gap: 5px;
+}
+.tracking-overlay .custom-range input[type="datetime-local"] {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 7px 9px; color: var(--text-main); font-family: var(--font-mono); font-size: 12px;
+    color-scheme: dark;
+}
+.tracking-overlay .custom-range button {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 8px 18px; border-radius: 20px; border: 1px solid rgba(160,196,255,0.4);
+    background: rgba(160,196,255,0.12); color: var(--accent); cursor: pointer; transition: var(--transition);
+}
+.tracking-overlay .custom-range button:hover { background: rgba(160,196,255,0.2); }
+
+.tracking-overlay .chart-card {
+    background: var(--card-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(15px);
+}
+.tracking-overlay .chart-card .chart-label {
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); margin-bottom: 16px;
+}
+
+.tracking-overlay .table-card { padding: 8px 24px; margin-top: 8px; width: 100%; }
+.tracking-overlay table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tracking-overlay th, .tracking-overlay td { text-align: left; padding: 13px 12px; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+.tracking-overlay th {
+    font-family: var(--font-mono);
+    color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em;
+}
+.tracking-overlay td { color: var(--text-main); font-family: var(--font-mono); font-size: 12.5px; }
+.tracking-overlay tr:last-child td { border-bottom: none; }
+.tracking-overlay tr:hover td { background: rgba(255,255,255,0.03); }
+
+.tracking-overlay .empty { text-align: center; color: var(--text-muted); padding: 80px 0; font-family: var(--font-sketch); font-size: 1.3rem; }
+
+@media (max-width: 640px) {
+    .tracking-overlay-inner { padding: 70px 16px 40px; }
+    .tracking-overlay .hero { padding: 1.6rem 1.4rem; }
+}
+
 @media (max-width: 480px) {
     .glass-panel { padding: 2rem 1.5rem; max-width: 95%; }
     .social-card { padding: 12px 16px; }

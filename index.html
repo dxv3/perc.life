@@ -70,7 +70,7 @@
                     </div>
                     <i data-lucide="arrow-up-right" class="arrow"></i>
                 </a>
-                <a href="/tracking/" class="social-card" target="_blank" rel="noopener">
+                <a href="/tracking/" id="tracking-link" class="social-card" rel="noopener">
                     <i data-lucide="line-chart"></i>
                     <div class="card-info">
                         <span class="title">Tracking</span>
@@ -148,6 +148,39 @@
         <div class="entry-content">
             <i data-lucide="fingerprint" class="entry-icon"></i>
             <p>[ click anywhere ]</p>
+        </div>
+    </div>
+
+    <div id="tracking-overlay" class="tracking-overlay">
+        <div class="tracking-overlay-inner">
+            <button id="tracking-close" class="tracking-close" aria-label="Close tracking">
+                <i data-lucide="x"></i>
+            </button>
+
+            <div class="hero glass-panel">
+                <h1>Live Stats</h1>
+                <div class="meta"><i data-lucide="clock"></i><span id="t-updated">Loading…</span></div>
+                <span class="badge">Tracking Live</span>
+            </div>
+
+            <div class="stats-row" id="t-statsGrid"></div>
+
+            <div class="section-head">
+                <div class="section-title">Trends</div>
+                <div class="range-controls" id="t-rangeControls"></div>
+            </div>
+            <div class="custom-range" id="t-customRange">
+                <label>From <input type="datetime-local" id="t-customFrom"></label>
+                <label>To <input type="datetime-local" id="t-customTo"></label>
+                <button id="t-applyCustom">Apply</button>
+            </div>
+            <div class="section-sub" id="t-rangeLabel"></div>
+            <div id="t-charts"></div>
+
+            <div class="section-head" style="margin-top:32px">
+                <div class="section-title">Recent Snapshots</div>
+            </div>
+            <div class="glass-panel table-card"><table id="t-historyTable"></table></div>
         </div>
     </div>
 
