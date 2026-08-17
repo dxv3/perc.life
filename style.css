@@ -328,9 +328,11 @@ a, button {
 .glass-panel.show .social-card:nth-child(4) { transition-delay: 0.25s; }
 .glass-panel.show .social-card:nth-child(5) { transition-delay: 0.3s; }
 
-.social-card > i:first-child {
+.social-card > i:first-child,
+.social-card > svg:first-child {
     width: 24px;
     height: 24px;
+    flex-shrink: 0;
     color: var(--text-muted);
     transition: color var(--transition);
 }
@@ -372,7 +374,8 @@ a, button {
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-.social-card:hover > i:first-child {
+.social-card:hover > i:first-child,
+.social-card:hover > svg:first-child {
     color: var(--accent);
 }
 
