@@ -3,6 +3,7 @@ import fs from 'fs';
 
 const DATA_FILE = '/opt/tracker/stats.jsonl';
 const GAME_NAME = 'Check your Playtime & Stats!';
+const GAME_URL = 'https://www.roblox.com/games/122298649618543/Check-your-Playtime-Stats';
 const THUMBNAIL_URL = '';
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -137,6 +138,19 @@ const server = http.createServer((req, res) => {
   }
   .hero .meta i { width: 14px; height: 14px; color: var(--accent); }
 
+  .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+  .play-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    color: var(--accent); text-decoration: none;
+    background: rgba(160, 196, 255, 0.08); padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(160, 196, 255, 0.3);
+    transition: var(--transition);
+  }
+  .play-link:hover { background: rgba(160,196,255,0.18); border-color: rgba(160,196,255,0.5); box-shadow: 0 0 12px var(--accent-glow); }
+  .play-link i { width: 13px; height: 13px; }
+
   .badge {
     display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600;
     background: rgba(160, 196, 255, 0.08); color: var(--accent); padding: 4px 12px; border-radius: 20px;
@@ -236,7 +250,7 @@ const server = http.createServer((req, res) => {
     color: var(--text-muted); margin-bottom: 16px;
   }
 
-  .table-card { padding: 8px 24px; margin-top: 8px; }
+  .table-card { padding: 8px 24px; margin-top: 8px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: left; padding: 13px 12px; border-bottom: 1px dashed rgba(255,255,255,0.15); }
   th {
@@ -272,7 +286,12 @@ const server = http.createServer((req, res) => {
     <div class="hero glass-panel">
       <h1>${GAME_NAME}</h1>
       <div class="meta"><i data-lucide="clock"></i><span id="updated">Loading…</span></div>
-      <span class="badge">Tracking Live</span>
+      <div class="hero-actions">
+        <span class="badge">Tracking Live</span>
+        <a href="${GAME_URL}" target="_blank" rel="noopener" class="play-link">
+          <i data-lucide="gamepad-2"></i> Play Game
+        </a>
+      </div>
     </div>
 
     <div class="stats-row" id="statsGrid"></div>

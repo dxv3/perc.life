@@ -743,6 +743,19 @@ a, button {
 }
 .tracking-overlay .hero .meta i { width: 14px; height: 14px; color: var(--accent); }
 
+.tracking-overlay .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+.tracking-overlay .play-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    color: var(--accent); text-decoration: none;
+    background: rgba(160, 196, 255, 0.08); padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(160, 196, 255, 0.3);
+    transition: var(--transition);
+}
+.tracking-overlay .play-link:hover { background: rgba(160,196,255,0.18); border-color: rgba(160,196,255,0.5); box-shadow: 0 0 12px var(--accent-glow); }
+.tracking-overlay .play-link i { width: 13px; height: 13px; }
+
 .tracking-overlay .stats-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -825,7 +838,7 @@ a, button {
     color: var(--text-muted); margin-bottom: 16px;
 }
 
-.tracking-overlay .table-card { padding: 8px 24px; margin-top: 8px; width: 100%; }
+.tracking-overlay .table-card { padding: 8px 24px; margin-top: 8px; width: 100%; max-width: none; display: block; overflow-x: auto; }
 .tracking-overlay table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tracking-overlay th, .tracking-overlay td { text-align: left; padding: 13px 12px; border-bottom: 1px dashed rgba(255,255,255,0.15); }
 .tracking-overlay th {
