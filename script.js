@@ -601,6 +601,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const cashIn = document.getElementById("t-devexCash");
     const currencySel = document.getElementById("t-devexCurrency");
     const wiseIn = document.getElementById("t-devexWise");
+    const shareWrap = document.getElementById("t-devexShareWrap");
+    const shareIn = document.getElementById("t-devexShare");
+    try { const saved = localStorage.getItem("devex18Share"); if (saved != null) shareIn.value = saved; } catch (e) {}
     const money = (n, cur) => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, currencyDisplay: "narrowSymbol" }).format(n);
 
     function loadFx() {
@@ -613,8 +616,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return fxPromise;
     }
 
+    // % of Robux earned at the US 18+ rate; the rest cashes out at the standard rate
+    function us18Share() {
+        return Math.min(100, Math.max(0, Number(shareIn.value) || 0));
+    }
+
+    function devexUsdPerRobux() {
+        if (devexRate !== "us18") return DEVEX_RATES[devexRate].usd;
+        const p = us18Share() / 100;
+        return DEVEX_RATES.us18.usd * p + DEVEX_RATES.standard.usd * (1 - p);
+    }
+
     function updateDevex() {
-        const usdPerRobux = DEVEX_RATES[devexRate].usd;
+        const usdPerRobux = devexUsdPerRobux();
         const cur = currencySel.value;
         const feePct = wiseIn.checked ? WISE_FEE_PCT[cur] : 0;
         // effective local currency per USD after the Wise conversion fee
@@ -632,11 +646,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const usd = robux * usdPerRobux;
         const tiles = [
             { label: "Payout", value: money(usd * rate, cur) },
-            { label: "In USD", value: money(usd, "USD") },
-            { label: "Per 1K Robux", value: money(1000 * usdPerRobux * rate, cur) },
-            { label: "Min Cashout", value: money(DEVEX_MIN * usdPerRobux * rate, cur) }
+            { label: "In USD", value: money(usd, "USD") }
         ];
-        if (feePct) tiles.splice(2, 0, { label: "Wise Fee (" + feePct + "%)", value: money(usd * fx[cur] * feePct / 100, cur) });
+        if (feePct) tiles.push({ label: "Wise Fee (" + feePct + "%)", value: money(usd * fx[cur] * feePct / 100, cur) });
         document.getElementById("t-devexResult").innerHTML = tiles.map(t => `<div class="devex-tile">
             <div class="label">${t.label}</div>
             <div class="value">${t.value}</div>
@@ -648,16 +660,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const warn = robux > 0 && robux < DEVEX_MIN
             ? `<span class="warn">below the ${DEVEX_MIN.toLocaleString("en-GB")} Robux minimum to cash out</span> · `
             : "";
-        note.innerHTML = warn + DEVEX_RATES[devexRate].label + " rate $" + usdPerRobux + "/Robux" + fxText + " · before any tax";
+        const rateText = devexRate === "us18" && us18Share() < 100
+            ? us18Share() + "% at US 18+ $" + DEVEX_RATES.us18.usd + ", rest at standard $" + DEVEX_RATES.standard.usd + " = $" + +usdPerRobux.toFixed(6) + "/Robux"
+            : DEVEX_RATES[devexRate].label + " rate $" + usdPerRobux + "/Robux";
+        note.innerHTML = warn + rateText + fxText + " · before any tax";
     }
 
     robuxIn.addEventListener("input", () => { devexLastEdited = "robux"; updateDevex(); });
     cashIn.addEventListener("input", () => { devexLastEdited = "cash"; updateDevex(); });
     currencySel.addEventListener("change", updateDevex);
     wiseIn.addEventListener("change", updateDevex);
+    shareIn.addEventListener("input", () => {
+        try { localStorage.setItem("devex18Share", shareIn.value); } catch (e) {}
+        updateDevex();
+    });
     document.querySelectorAll("#t-devexRates .range-pill").forEach(btn => {
         btn.addEventListener("click", () => {
             devexRate = btn.dataset.rate;
+            shareWrap.hidden = devexRate !== "us18";
             document.querySelectorAll("#t-devexRates .range-pill").forEach(b => b.classList.toggle("active", b === btn));
             updateDevex();
         });
