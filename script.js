@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setActiveRangeKey(key) {
-        overlay.querySelectorAll(".range-pill").forEach(b => b.classList.toggle("active", b.dataset.key === key));
+        overlay.querySelectorAll("#t-rangeControls .range-pill").forEach(b => b.classList.toggle("active", b.dataset.key === key));
     }
 
     function renderRangeControls() {
@@ -581,8 +581,92 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshTimer = setInterval(refresh, REFRESH_MS);
     }
 
+    // ---- DevEx calculator: Robux <-> cash, USD rates converted via ECB FX (frankfurter) ----
+    const DEVEX_RATES = {
+        standard: { usd: 0.0038, label: "Standard" },
+        legacy: { usd: 0.0035, label: "Legacy (earned before 5 Sep 2025)" },
+        us18: { usd: 0.0054, label: "US 18+" }
+    };
+    const DEVEX_MIN = 30000;
+    const FX_URL = "https://api.frankfurter.dev/v2/rates?base=USD&quotes=GBP,EUR,CAD,AUD";
+    const fx = { USD: 1, GBP: 0.754, EUR: 0.881, CAD: 1.417, AUD: 1.432 }; // fallback until live rates load
+    // Wise balance-to-balance conversion fee from USD (% of amount, no flat fee), from wise.com pricing
+    const WISE_FEE_PCT = { USD: 0, GBP: 0.33, EUR: 0.29, CAD: 0.28, AUD: 0.28 };
+    let fxDate = null;
+    let fxPromise = null;
+    let devexRate = "standard";
+    let devexLastEdited = "robux";
+
+    const robuxIn = document.getElementById("t-devexRobux");
+    const cashIn = document.getElementById("t-devexCash");
+    const currencySel = document.getElementById("t-devexCurrency");
+    const wiseIn = document.getElementById("t-devexWise");
+    const money = (n, cur) => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, currencyDisplay: "narrowSymbol" }).format(n);
+
+    function loadFx() {
+        if (fxPromise) return fxPromise;
+        fxPromise = fetch(FX_URL)
+            .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+            .then(rows => rows.forEach(row => { fx[row.quote] = row.rate; fxDate = row.date; }))
+            .catch(err => console.error("fx load failed", err))
+            .finally(updateDevex);
+        return fxPromise;
+    }
+
+    function updateDevex() {
+        const usdPerRobux = DEVEX_RATES[devexRate].usd;
+        const cur = currencySel.value;
+        const feePct = wiseIn.checked ? WISE_FEE_PCT[cur] : 0;
+        // effective local currency per USD after the Wise conversion fee
+        const rate = fx[cur] * (1 - feePct / 100);
+
+        if (devexLastEdited === "robux") {
+            const robux = Math.max(0, Math.floor(Number(robuxIn.value) || 0));
+            cashIn.value = robux ? (robux * usdPerRobux * rate).toFixed(2) : "";
+        } else {
+            const cash = Math.max(0, Number(cashIn.value) || 0);
+            robuxIn.value = cash ? Math.ceil(cash / rate / usdPerRobux) : "";
+        }
+
+        const robux = Math.max(0, Math.floor(Number(robuxIn.value) || 0));
+        const usd = robux * usdPerRobux;
+        const tiles = [
+            { label: "Payout", value: money(usd * rate, cur) },
+            { label: "In USD", value: money(usd, "USD") },
+            { label: "Per 1K Robux", value: money(1000 * usdPerRobux * rate, cur) },
+            { label: "Min Cashout", value: money(DEVEX_MIN * usdPerRobux * rate, cur) }
+        ];
+        if (feePct) tiles.splice(2, 0, { label: "Wise Fee (" + feePct + "%)", value: money(usd * fx[cur] * feePct / 100, cur) });
+        document.getElementById("t-devexResult").innerHTML = tiles.map(t => `<div class="devex-tile">
+            <div class="label">${t.label}</div>
+            <div class="value">${t.value}</div>
+        </div>`).join("");
+
+        const note = document.getElementById("t-devexNote");
+        const fxText = cur === "USD" ? "" : " · 1 USD = " + fx[cur].toFixed(4) + " " + cur + (fxDate ? " (ECB, " + fxDate + ")" : " (approx.)")
+            + (feePct ? " minus " + feePct + "% Wise fee" : "");
+        const warn = robux > 0 && robux < DEVEX_MIN
+            ? `<span class="warn">below the ${DEVEX_MIN.toLocaleString("en-GB")} Robux minimum to cash out</span> · `
+            : "";
+        note.innerHTML = warn + DEVEX_RATES[devexRate].label + " rate $" + usdPerRobux + "/Robux" + fxText + " · before any tax";
+    }
+
+    robuxIn.addEventListener("input", () => { devexLastEdited = "robux"; updateDevex(); });
+    cashIn.addEventListener("input", () => { devexLastEdited = "cash"; updateDevex(); });
+    currencySel.addEventListener("change", updateDevex);
+    wiseIn.addEventListener("change", updateDevex);
+    document.querySelectorAll("#t-devexRates .range-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+            devexRate = btn.dataset.rate;
+            document.querySelectorAll("#t-devexRates .range-pill").forEach(b => b.classList.toggle("active", b === btn));
+            updateDevex();
+        });
+    });
+    updateDevex();
+
     function openTracking(pushState) {
         overlay.classList.add("show");
+        loadFx();
         document.body.style.overflow = "hidden";
         if (pushState !== false) history.pushState({ tracking: true }, "", "/tracking/");
         loadChartLib().then(initTrackingView).catch(() => {

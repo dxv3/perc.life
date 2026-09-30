@@ -849,6 +849,51 @@ a, button {
 .tracking-overlay tr:last-child td { border-bottom: none; }
 .tracking-overlay tr:hover td { background: rgba(255,255,255,0.03); }
 
+.tracking-overlay .devex-card {
+    background: var(--card-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 24px;
+    backdrop-filter: blur(15px);
+}
+.tracking-overlay .devex-inputs { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.tracking-overlay .devex-inputs label {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; display: flex; flex-direction: column; gap: 6px;
+    flex: 1 1 200px; min-width: 0;
+}
+.tracking-overlay .devex-money { display: flex; gap: 8px; }
+.tracking-overlay .devex-inputs input,
+.tracking-overlay .devex-inputs select {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 10px 12px; color: var(--text-main); font-family: var(--font-mono); font-size: 15px;
+    color-scheme: dark; width: 100%; min-width: 0; height: 44px; box-sizing: border-box;
+    transition: var(--transition);
+}
+.tracking-overlay .devex-inputs select { width: auto; flex-shrink: 0; cursor: pointer; }
+.tracking-overlay .devex-inputs input:focus,
+.tracking-overlay .devex-inputs select:focus { outline: none; border-color: rgba(160,196,255,0.5); box-shadow: 0 0 12px var(--accent-glow); }
+.tracking-overlay .devex-arrow { width: 18px; height: 18px; color: var(--accent); margin-bottom: 12px; flex-shrink: 0; }
+.tracking-overlay .devex-toggle {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted);
+}
+.tracking-overlay .devex-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.tracking-overlay .devex-toggle:hover { color: var(--text-main); }
+.tracking-overlay .devex-result {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 20px;
+}
+.tracking-overlay .devex-tile {
+    border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 14px 16px;
+}
+.tracking-overlay .devex-tile .label {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.tracking-overlay .devex-tile .value { font-size: 22px; font-weight: 800; margin-top: 6px; color: var(--text-main); overflow-wrap: anywhere; }
+.tracking-overlay .devex-tile:first-child .value { color: var(--accent); }
+.tracking-overlay .devex-note { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 16px; line-height: 1.5; }
+.tracking-overlay .devex-note .warn { color: #ffd166; }
+
 .tracking-overlay .empty { text-align: center; color: var(--text-muted); padding: 80px 0; font-family: var(--font-sketch); font-size: 1.3rem; }
 
 @media (max-width: 640px) {
