@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.lanyard.rest https://api.frankfurter.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com 'unsafe-inline'; media-src 'self' data: blob:; img-src 'self' data: https:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.lanyard.rest https://api.frankfurter.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com 'unsafe-inline'; media-src 'self' data: blob:; img-src 'self' data: blob: https:;">
     <title>dxv3</title>
     <link rel="icon" href="favicon.ico">
+    <base href="/">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="roblox-tools.css">
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat&family=Kalam&family=Shadows+Into+Light&family=Permanent+Marker&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -70,11 +72,11 @@
                     </div>
                     <i data-lucide="arrow-up-right" class="arrow"></i>
                 </a>
-                <a href="/tracking/" id="tracking-link" class="social-card" rel="noopener">
-                    <i data-lucide="line-chart"></i>
+                <a href="/roblox/" id="tracking-link" class="social-card" rel="noopener">
+                    <i data-lucide="box"></i>
                     <div class="card-info">
-                        <span class="title">Tracking</span>
-                        <span class="handle">live stats</span>
+                        <span class="title">Roblox</span>
+                        <span class="handle">stats + tools</span>
                     </div>
                     <i data-lucide="arrow-up-right" class="arrow"></i>
                 </a>
@@ -153,85 +155,144 @@
 
     <div id="tracking-overlay" class="tracking-overlay">
         <div class="tracking-overlay-inner">
-            <button id="tracking-close" class="tracking-close" aria-label="Close tracking">
+            <button id="tracking-close" class="tracking-close" aria-label="Close Roblox">
                 <i data-lucide="x"></i>
             </button>
 
-            <div class="hero glass-panel">
-                <h1>Live Stats</h1>
-                <div class="meta"><i data-lucide="clock"></i><span id="t-updated">Loading…</span></div>
-                <div class="hero-actions">
-                    <span class="badge">Tracking Live</span>
-                    <a href="https://www.roblox.com/games/122298649618543/Check-your-Playtime-Stats" target="_blank" rel="noopener" class="play-link">
-                        <i data-lucide="gamepad-2"></i> Play Game
-                    </a>
-                </div>
+            <div class="rbx-head">
+                <div class="rbx-title"><i data-lucide="gamepad-2"></i> Roblox</div>
+                <nav class="rbx-tabs" id="rbx-tabs">
+                    <button class="rbx-tab active" data-tab="stats"><i data-lucide="line-chart"></i><span>Stats</span><kbd>1</kbd></button>
+                    <button class="rbx-tab" data-tab="icon"><i data-lucide="hourglass"></i><span>Update Icon</span><kbd>2</kbd></button>
+                    <button class="rbx-tab" data-tab="mosaic"><i data-lucide="layout-grid"></i><span>Mosaic</span><kbd>3</kbd></button>
+                    <button class="rbx-tab" data-tab="calc"><i data-lucide="calculator"></i><span>Calc</span><kbd>4</kbd></button>
+                    <button class="rbx-tab" data-tab="frontpage"><i data-lucide="monitor"></i><span>Frontpage</span><kbd>5</kbd></button>
+                    <button class="rbx-tab" data-tab="crop"><i data-lucide="crop"></i><span>Crop</span><kbd>6</kbd></button>
+                </nav>
             </div>
 
-            <div class="stats-row" id="t-statsGrid"></div>
-
-            <div class="section-head">
-                <div class="section-title">Trends</div>
-                <div class="range-controls" id="t-rangeControls"></div>
-            </div>
-            <div class="custom-range" id="t-customRange">
-                <label>From <input type="datetime-local" id="t-customFrom"></label>
-                <label>To <input type="datetime-local" id="t-customTo"></label>
-                <button id="t-applyCustom">Apply</button>
-            </div>
-            <div class="section-sub" id="t-rangeLabel"></div>
-            <div id="t-charts"></div>
-
-            <div class="section-head" style="margin-top:32px">
-                <div class="section-title">Recent Snapshots</div>
-            </div>
-            <div class="glass-panel table-card"><table id="t-historyTable"></table></div>
-
-            <div class="section-head" style="margin-top:32px">
-                <div class="section-title">DevEx Calculator</div>
-                <div class="range-controls" id="t-devexRates">
-                    <button class="range-pill active" data-rate="standard">Standard</button>
-                    <button class="range-pill" data-rate="legacy">Legacy</button>
-                    <button class="range-pill" data-rate="us18">US 18+</button>
+            <section class="rbx-pane active" data-pane="stats">
+                <div class="hero glass-panel">
+                    <h1>Live Stats</h1>
+                    <div class="meta"><i data-lucide="clock"></i><span id="t-updated">Loading…</span></div>
+                    <div class="hero-actions">
+                        <span class="badge">Tracking Live</span>
+                        <a href="https://www.roblox.com/games/122298649618543/Check-your-Playtime-Stats" target="_blank" rel="noopener" class="play-link">
+                            <i data-lucide="gamepad-2"></i> Play Game
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="devex-card">
-                <div class="devex-inputs">
-                    <label>Robux
-                        <input type="number" id="t-devexRobux" min="0" step="1" value="30000" inputmode="numeric">
-                    </label>
-                    <i data-lucide="arrow-left-right" class="devex-arrow"></i>
-                    <label>Payout
-                        <span class="devex-money">
-                            <input type="number" id="t-devexCash" min="0" step="0.01" inputmode="decimal">
-                            <select id="t-devexCurrency">
-                                <option value="GBP" selected>GBP</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="CAD">CAD</option>
-                                <option value="AUD">AUD</option>
-                            </select>
-                        </span>
-                    </label>
+
+                <div class="stats-row" id="t-statsGrid"></div>
+
+                <div class="section-head">
+                    <div class="section-title">Trends</div>
+                    <div class="range-controls" id="t-rangeControls"></div>
                 </div>
-                <div class="devex-options">
-                    <label class="devex-share" id="t-devexShareWrap" hidden>
-                        <span>Robux at 18+ rate</span>
-                        <input type="number" id="t-devexShare" min="0" max="100" step="0.1" value="100" inputmode="decimal">
-                        <span>% · rest at standard</span>
-                    </label>
-                    <label class="devex-toggle">
-                        <input type="checkbox" id="t-devexWise" checked>
-                        <span>Include Wise fees (USD balance → local currency)</span>
-                    </label>
+                <div class="custom-range" id="t-customRange">
+                    <label>From <input type="datetime-local" id="t-customFrom"></label>
+                    <label>To <input type="datetime-local" id="t-customTo"></label>
+                    <button id="t-applyCustom">Apply</button>
                 </div>
-                <div class="devex-result" id="t-devexResult"></div>
-                <div class="devex-note" id="t-devexNote"></div>
-            </div>
+                <div class="section-sub" id="t-rangeLabel"></div>
+                <div id="t-charts"></div>
+
+                <div class="section-head" style="margin-top:32px">
+                    <div class="section-title">Recent Snapshots</div>
+                </div>
+                <div class="glass-panel table-card"><table id="t-historyTable"></table></div>
+            </section>
+
+            <section class="rbx-pane" data-pane="calc">
+                <div class="section-head">
+                    <div class="section-title">DevEx Calculator</div>
+                    <div class="range-controls" id="t-devexRates">
+                        <button class="range-pill active" data-rate="standard">Standard</button>
+                        <button class="range-pill" data-rate="legacy">Legacy</button>
+                        <button class="range-pill" data-rate="us18">US 18+</button>
+                    </div>
+                </div>
+                <div class="devex-card">
+                    <div class="devex-inputs">
+                        <label>Robux
+                            <input type="number" id="t-devexRobux" min="0" step="1" value="30000" inputmode="numeric">
+                        </label>
+                        <i data-lucide="arrow-left-right" class="devex-arrow"></i>
+                        <label>Payout
+                            <span class="devex-money">
+                                <input type="number" id="t-devexCash" min="0" step="0.01" inputmode="decimal">
+                                <select id="t-devexCurrency">
+                                    <option value="GBP" selected>GBP</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="CAD">CAD</option>
+                                    <option value="AUD">AUD</option>
+                                </select>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="devex-options">
+                        <label class="devex-share" id="t-devexShareWrap" hidden>
+                            <span>Robux at 18+ rate</span>
+                            <input type="number" id="t-devexShare" min="0" max="100" step="0.1" value="100" inputmode="decimal">
+                            <span>% · rest at standard</span>
+                        </label>
+                        <label class="devex-toggle">
+                            <input type="checkbox" id="t-devexWise" checked>
+                            <span>Include Wise fees (USD balance → local currency)</span>
+                        </label>
+                    </div>
+                    <div class="devex-result" id="t-devexResult"></div>
+                    <div class="devex-note" id="t-devexNote"></div>
+                </div>
+
+                <div class="section-head" style="margin-top:32px">
+                    <div class="section-title">Marketplace Tax</div>
+                </div>
+                <div class="devex-card">
+                    <div class="devex-inputs">
+                        <label>Price
+                            <input type="number" id="t-taxPrice" min="0" step="1" value="1000" inputmode="numeric">
+                        </label>
+                        <i data-lucide="arrow-left-right" class="devex-arrow"></i>
+                        <label>You receive
+                            <input type="number" id="t-taxNet" min="0" step="1" inputmode="numeric">
+                        </label>
+                    </div>
+                    <div class="devex-result" id="t-taxResult"></div>
+                    <div class="tax-table" id="t-taxTable"></div>
+                    <div class="devex-note" id="t-taxNote"></div>
+                </div>
+
+                <div class="section-head" style="margin-top:32px">
+                    <div class="section-title">Black Market Check</div>
+                </div>
+                <div class="devex-card">
+                    <div class="devex-inputs">
+                        <label>Robux
+                            <input type="number" id="t-bmRobux" min="0" step="1" value="10000" inputmode="numeric">
+                        </label>
+                        <label>Price paid
+                            <span class="devex-money">
+                                <input type="number" id="t-bmPrice" min="0" step="0.01" inputmode="decimal">
+                                <select id="t-bmCurrency"></select>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="devex-result" id="t-bmResult"></div>
+                    <div class="devex-note" id="t-bmNote"></div>
+                </div>
+            </section>
+
+            <section class="rbx-pane" data-pane="icon" id="rbx-icon"></section>
+            <section class="rbx-pane" data-pane="mosaic" id="rbx-mosaic"></section>
+            <section class="rbx-pane" data-pane="frontpage" id="rbx-frontpage"></section>
+            <section class="rbx-pane" data-pane="crop" id="rbx-crop"></section>
         </div>
     </div>
 
     <script src="data.js"></script>
     <script src="script.js"></script>
+    <script src="roblox-tools.js"></script>
 </body>
 </html>
