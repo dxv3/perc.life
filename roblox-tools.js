@@ -137,6 +137,17 @@
         ctx.closePath();
     }
 
+    // Cached downscaled copy of an asset (shorter side = minSide) so previews don't redraw from full resolution
+    function previewOf(asset, minSide) {
+        const key = "_preview" + minSide;
+        if (asset[key]) return asset[key];
+        const k = minSide / Math.min(asset.w, asset.h);
+        asset[key] = k >= 1
+            ? { src: asset.img, k: 1 }
+            : { src: resample(asset.img, 0, 0, asset.w, asset.h, asset.w * k, asset.h * k), k };
+        return asset[key];
+    }
+
     // center square crop of an asset, as a canvas
     function squareOf(asset, size) {
         const s = Math.min(asset.w, asset.h);
@@ -383,10 +394,30 @@
             ctx.fillRect(0, 0, c.width, c.height);
             return c;
         }
-        let silCache = new Map();
-        function silhouetteOf(src) {
-            if (!silCache.has(src)) silCache.set(src, silhouette(src));
-            return silCache.get(src);
+
+        // glyph + outline baked at one size, so each icon is a single drawImage instead of 25
+        let glyphCache = { key: "", canvas: null };
+        function outlinedGlyph(glyph, dw, dh, ol) {
+            const key = [glyph.src || "hourglass", dw.toFixed(1), dh.toFixed(1), ol.toFixed(2)].join("|");
+            if (glyphCache.key === key && glyphCache.glyph === glyph) return glyphCache.canvas;
+            const pad = Math.ceil(ol) + 1;
+            const c = makeCanvas(dw + pad * 2, dh + pad * 2);
+            const ctx = c.getContext("2d");
+            ctx.imageSmoothingQuality = "high";
+            const scaled = makeCanvas(dw, dh);
+            const sctx = scaled.getContext("2d");
+            sctx.imageSmoothingQuality = "high";
+            sctx.drawImage(glyph, 0, 0, scaled.width, scaled.height);
+            if (ol > 0) {
+                const sil = silhouette(scaled);
+                for (let i = 0; i < 24; i++) {
+                    const t = i / 24 * Math.PI * 2;
+                    ctx.drawImage(sil, pad + Math.cos(t) * ol, pad + Math.sin(t) * ol);
+                }
+            }
+            ctx.drawImage(scaled, pad, pad);
+            glyphCache = { key, glyph, canvas: c };
+            return c;
         }
 
         function renderIcon(card, size) {
@@ -394,13 +425,28 @@
             const S = Math.min(a.w, a.h);
             const out = size || Math.min(S, 2048);
             const sx = (a.w - S) * card.ox, sy = (a.h - S) * card.oy;
-            const c = out < S / 2 ? resample(a.img, sx, sy, S, S, out, out) : (() => {
-                const cv = makeCanvas(out, out);
-                const x = cv.getContext("2d");
+            let c;
+            if (size && size <= 512) {
+                // preview: the cropped square is cached per card until the crop moves
+                const key = size + "|" + card.ox + "|" + card.oy;
+                if (!card.base || card.base.key !== key || card.base.asset !== a) {
+                    const p = previewOf(a, size * 2);
+                    const b = makeCanvas(out, out);
+                    const bx = b.getContext("2d");
+                    bx.imageSmoothingQuality = "high";
+                    bx.drawImage(p.src, sx * p.k, sy * p.k, S * p.k, S * p.k, 0, 0, out, out);
+                    card.base = { key, asset: a, canvas: b };
+                }
+                c = makeCanvas(out, out);
+                c.getContext("2d").drawImage(card.base.canvas, 0, 0);
+            } else if (out < S / 2) {
+                c = resample(a.img, sx, sy, S, S, out, out);
+            } else {
+                c = makeCanvas(out, out);
+                const x = c.getContext("2d");
                 x.imageSmoothingQuality = "high";
                 x.drawImage(a.img, sx, sy, S, S, 0, 0, out, out);
-                return cv;
-            })();
+            }
             const ctx = c.getContext("2d");
             ctx.fillStyle = `rgba(0,0,0,${style.dark / 100})`;
             ctx.fillRect(0, 0, out, out);
@@ -414,15 +460,8 @@
             const gs = Math.min(box / gw, box / gh);
             const dw = gw * gs, dh = gh * gs;
             const gx = (out - dw) / 2, gy = out * style.ovY / 100 - dh / 2;
-            if (ol > 0) {
-                const sil = silhouetteOf(glyph);
-                const steps = 24;
-                for (let i = 0; i < steps; i++) {
-                    const t = i / steps * Math.PI * 2;
-                    ctx.drawImage(sil, gx + Math.cos(t) * ol, gy + Math.sin(t) * ol, dw, dh);
-                }
-            }
-            ctx.drawImage(glyph, gx, gy, dw, dh);
+            const pad = Math.ceil(ol) + 1;
+            ctx.drawImage(outlinedGlyph(glyph, dw, dh, ol), gx - pad, gy - pad);
 
             const text = (card.text || "").trim();
             if (text) {
@@ -676,7 +715,6 @@
         // custom overlay (kept in localStorage as a data URL when it fits)
         function setOverlay(img) {
             customOverlay = img;
-            silCache = new Map();
             $("#ic-overlayReset", root).hidden = !img;
             redrawAll();
         }
@@ -836,7 +874,7 @@
             return rects;
         }
 
-        function draw(short) {
+        function draw(short, preview) {
             const [W, H] = canvasSize(short);
             const scale = Math.min(W, H) / 1080;
             const c = makeCanvas(W, H);
@@ -852,7 +890,12 @@
                 ctx.clip();
                 if (asset) {
                     ctx.filter = filter;
-                    drawCover(ctx, asset.img, r.x, r.y, r.w, r.h, asset.w, asset.h);
+                    if (preview) {
+                        const p = previewOf(asset, 540);
+                        drawCover(ctx, p.src, r.x, r.y, r.w, r.h, asset.w * p.k, asset.h * p.k);
+                    } else {
+                        drawCover(ctx, asset.img, r.x, r.y, r.w, r.h, asset.w, asset.h);
+                    }
                     ctx.filter = "none";
                 } else {
                     ctx.fillStyle = "rgba(255,255,255,0.06)";
@@ -937,17 +980,21 @@
         }
 
         let rafPending = false;
+        let slotSig = "";
         function render() {
             if (rafPending) return;
             rafPending = true;
             requestAnimationFrame(() => {
                 rafPending = false;
                 fitSlots();
-                const preview = draw(540);
+                const preview = draw(540, true);
                 canvasEl.width = preview.width;
                 canvasEl.height = preview.height;
                 canvasEl.getContext("2d").drawImage(preview, 0, 0);
                 const [W, H] = [preview.width, preview.height];
+                const sig = [settings.format, settings.ratio, settings.gap, slots.slice(0, cellCount()).map(id => assets.get(id) ? 1 : 0).join("")].join("|");
+                if (sig === slotSig) return;
+                slotSig = sig;
                 slotsEl.innerHTML = cellRects(W, H, Math.min(W, H) / 1080).map((r, i) => {
                     const filled = !!assets.get(slots[i]);
                     return `<div class="mo-slot${filled ? " filled" : ""}" data-i="${i}" draggable="${filled}"
@@ -1461,7 +1508,7 @@
             ctx.restore();
         }
 
-        function drawTile(ctx, t, T, kind, mobile, isHover) {
+        function drawTile(ctx, t, T, kind, mobile) {
             const g = t.game;
             if (!g) return;
             const r = kind === "thumb" ? (mobile ? 8 : 10) : (mobile ? 10 : 14);
@@ -1480,15 +1527,6 @@
                 ctx.fillRect(t.x, t.y, t.w, t.h);
             }
             ctx.restore();
-            if (isHover) {
-                ctx.save();
-                roundRectPath(ctx, t.x - 3, t.y - 3, t.w + 6, t.h + 6, r + 3);
-                ctx.strokeStyle = T.hover;
-                ctx.globalAlpha = 0.85;
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.restore();
-            }
 
             const nameSize = mobile ? 13 : 17;
             const metaSize = mobile ? 11 : 14;
@@ -1607,7 +1645,7 @@
             }
         }
 
-        function paint(ctx, W, H, withHover) {
+        function paint(ctx, W, H) {
             const T = THEMES[st.theme];
             const lay = layout(W, H);
             fill(lay);
@@ -1632,9 +1670,8 @@
                     ctx.textAlign = "left";
                 }
                 sec.tiles.forEach(t => {
-                    const isHover = withHover && hover && hover.s === t.s && hover.i === t.i;
-                    drawTile(ctx, t, T, sec.kind, lay.mobile, isHover);
-                    tiles.push(t);
+                    drawTile(ctx, t, T, sec.kind, lay.mobile);
+                    tiles.push(Object.assign(t, { kind: sec.kind, mobile: lay.mobile }));
                 });
             });
             ctx.restore();
@@ -1752,14 +1789,38 @@
             $("#fp-iconDel", root).disabled = !icon;
         }
 
+        // full repaints are batched per frame; hover changes only blit the cached render plus an outline
         let rafPending = false;
-        function schedule() {
+        let needsFull = false;
+        let baseCanvas = null;
+        let viewScale = 1;
+        function schedule(hoverOnly) {
+            if (!hoverOnly) needsFull = true;
             if (rafPending) return;
             rafPending = true;
             requestAnimationFrame(() => {
                 rafPending = false;
-                draw();
+                if (needsFull || !baseCanvas) { needsFull = false; draw(); }
+                drawHover();
             });
+        }
+
+        function drawHover() {
+            if (!baseCanvas || !root.classList.contains("active")) return;
+            const ctx = canvasEl.getContext("2d");
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.drawImage(baseCanvas, 0, 0);
+            const t = hover && lastTiles.find(x => x.s === hover.s && x.i === hover.i);
+            if (!t) return;
+            const dpr = window.devicePixelRatio || 1;
+            const r = t.kind === "thumb" ? (t.mobile ? 8 : 10) : (t.mobile ? 10 : 14);
+            ctx.setTransform(viewScale * dpr, 0, 0, viewScale * dpr, 0, 0);
+            roundRectPath(ctx, t.x - 3, t.y - 3, t.w + 6, t.h + 6, r + 3);
+            ctx.strokeStyle = THEMES[st.theme].hover;
+            ctx.globalAlpha = 0.85;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
         }
 
         function draw() {
@@ -1773,6 +1834,7 @@
                 scale = Math.min(maxW / W, maxH / H);
             }
             if (tests.distance) scale *= 0.35;
+            viewScale = scale;
             canvasEl.width = Math.round(W * scale * dpr);
             canvasEl.height = Math.round(H * scale * dpr);
             canvasEl.style.width = W * scale + "px";
@@ -1781,7 +1843,13 @@
             const ctx = canvasEl.getContext("2d");
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.imageSmoothingQuality = "high";
-            lastTiles = paint(ctx, W, H, true);
+            lastTiles = paint(ctx, W, H);
+            if (!baseCanvas || baseCanvas.width !== canvasEl.width || baseCanvas.height !== canvasEl.height) {
+                baseCanvas = makeCanvas(canvasEl.width, canvasEl.height);
+            }
+            const b = baseCanvas.getContext("2d");
+            b.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+            b.drawImage(canvasEl, 0, 0);
         }
 
         function exportCanvas() {
@@ -1791,7 +1859,7 @@
             const ctx = c.getContext("2d");
             ctx.scale(k, k);
             ctx.imageSmoothingQuality = "high";
-            paint(ctx, W, H, false);
+            paint(ctx, W, H);
             return c;
         }
 
@@ -1808,9 +1876,9 @@
             if ((next && hover && next.s === hover.s && next.i === hover.i) || (!next && !hover)) return;
             hover = next;
             canvasEl.style.cursor = t ? "pointer" : "default";
-            schedule();
+            schedule(true);
         });
-        canvasEl.addEventListener("mouseleave", () => { hover = null; schedule(); });
+        canvasEl.addEventListener("mouseleave", () => { hover = null; schedule(true); });
         canvasEl.addEventListener("click", e => {
             const t = tileAt(e);
             if (!t) return;

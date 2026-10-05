@@ -1,5 +1,19 @@
 /* ---- Roblox overlay: header, tabs, tool panes ---- */
 
+/* Once the overlay has faded in, stop painting the animated page behind it and the blur over it.
+   The overlay is near-opaque, so this looks the same but frees the GPU for the tools. */
+body.overlay-open main.container,
+body.overlay-open #bg-container,
+body.overlay-open #noise { visibility: hidden; transition: visibility 0s 0.6s; }
+body.overlay-open .tracking-overlay {
+    background: var(--bg-dark);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0s 0.6s, backdrop-filter 0s 0.6s, -webkit-backdrop-filter 0s 0.6s;
+}
+.tracking-overlay .glass-panel,
+.tracking-overlay .chart-card,
+.tracking-overlay .devex-card { backdrop-filter: none; -webkit-backdrop-filter: none; }
+
 .rbx-head {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
     margin-bottom: 28px; padding-right: 56px;
@@ -32,7 +46,7 @@
 
 .rbx-card {
     background: var(--card-bg); border: 2px solid var(--panel-border); border-radius: 24px;
-    padding: 22px; backdrop-filter: blur(15px); min-width: 0;
+    padding: 22px; min-width: 0;
 }
 .rbx-card-title {
     font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
