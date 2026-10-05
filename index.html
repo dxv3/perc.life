@@ -7,8 +7,8 @@
     <title>dxv3</title>
     <link rel="icon" href="favicon.ico">
     <base href="/">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="roblox-tools.css">
+    <link rel="stylesheet" href="css/site.css">
+    <link rel="stylesheet" href="css/roblox.css">
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat&family=Kalam&family=Shadows+Into+Light&family=Permanent+Marker&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -72,7 +72,7 @@
                     </div>
                     <i data-lucide="arrow-up-right" class="arrow"></i>
                 </a>
-                <a href="/roblox/" id="tracking-link" class="social-card" rel="noopener">
+                <a href="/roblox/" id="roblox-link" class="social-card" rel="noopener">
                     <i data-lucide="box"></i>
                     <div class="card-info">
                         <span class="title">Roblox</span>
@@ -153,9 +153,9 @@
         </div>
     </div>
 
-    <div id="tracking-overlay" class="tracking-overlay">
-        <div class="tracking-overlay-inner">
-            <button id="tracking-close" class="tracking-close" aria-label="Close Roblox">
+    <div id="roblox-overlay" class="roblox-overlay">
+        <div class="roblox-overlay-inner">
+            <button id="roblox-close" class="roblox-close" aria-label="Close Roblox">
                 <i data-lucide="x"></i>
             </button>
 
@@ -291,8 +291,16 @@
         </div>
     </div>
 
-    <script src="data.js"></script>
-    <script src="script.js"></script>
-    <script src="roblox-tools.js"></script>
+    <script src="js/site-files.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/roblox/stats.js"></script>
+    <script src="js/roblox/calc.js"></script>
+    <script src="js/roblox/shared.js"></script>
+    <script src="js/roblox/update-icon.js"></script>
+    <script src="js/roblox/mosaic.js"></script>
+    <script src="js/roblox/frontpage.js"></script>
+    <script src="js/roblox/crop.js"></script>
+    <script src="js/roblox/init.js"></script>
+    <script src="js/roblox/overlay.js"></script>
 </body>
 </html>
