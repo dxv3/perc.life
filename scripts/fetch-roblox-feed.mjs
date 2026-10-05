@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds roblox-feed.json: a snapshot of Roblox's public chart sorts for the Frontpage tool.
+// Builds data/roblox-feed.json: a snapshot of Roblox's public chart sorts for the Frontpage tool.
 // Roblox's JSON APIs don't allow browser CORS, so this runs in a GitHub Action and the file is committed.
 // Usage: node scripts/fetch-roblox-feed.mjs [--dry]
 import fs from "fs";
@@ -7,7 +7,7 @@ import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
 
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "roblox-feed.json");
+const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "roblox-feed.json");
 const DRY = process.argv.includes("--dry");
 const PER_SORT = 24;
 const MIN_GAMES = 40;
