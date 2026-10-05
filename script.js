@@ -105,6 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderBass() {
         if (!bassVisualsActive) return;
         animationFrameId = requestAnimationFrame(renderBass);
+        // page is hidden behind the Roblox overlay: skip the flashes so they don't restyle the whole document
+        if (document.body.classList.contains("overlay-open")) return;
         
         analyser.getByteFrequencyData(dataArray);
 
@@ -798,8 +800,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     overlay.querySelectorAll(".rbx-tab").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
 
+    const bgVideo = document.getElementById("bg-video");
+    let videoPausedByOverlay = false;
+
     function openTracking(pushState) {
         overlay.classList.add("show");
+        document.body.classList.add("overlay-open");
+        document.body.classList.remove("bass-flash-bg");
+        if (bgVideo && !bgVideo.paused) { bgVideo.pause(); videoPausedByOverlay = true; }
         loadFx();
         document.body.style.overflow = "hidden";
         const hashTab = location.hash.slice(1);
@@ -813,6 +821,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function closeTracking(pushState) {
         overlay.classList.remove("show");
+        document.body.classList.remove("overlay-open");
+        if (videoPausedByOverlay) { videoPausedByOverlay = false; bgVideo.play().catch(() => {}); }
         document.body.style.overflow = "";
         if (pushState !== false) history.pushState({}, "", "/");
         if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
