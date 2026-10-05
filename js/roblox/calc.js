@@ -149,10 +149,6 @@
             tiles.push({ label: "Buyer Pays", value: rbx(price) });
         }
         document.getElementById("t-taxResult").innerHTML = tiles.map(t => `<div class="devex-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`).join("");
-        const plusCol = n => plusDiscount ? `<span class="plus">${rbx(plusPrice(priceFor(n)))}</span>` : "";
-        document.getElementById("t-taxTable").innerHTML = '<div class="tax-row head"><span>To receive</span><span>Set price to'
-            + (plusDiscount ? " · Plus pays" : "") + '</span></div>'
-            + [100, 500, 1000, 2500, 5000, 10000, 25000, 100000].map(n => `<button class="tax-row" data-net="${n}"><span>${rbx(n)}</span><span>${rbx(priceFor(n))}${plusCol(n)}</span></button>`).join("");
         document.getElementById("t-taxNote").textContent = "30% marketplace fee on game passes, dev products and items · earnings are rounded down · pending for a few days before they land"
             + (plusDiscount ? " · Roblox Plus subscribers get " + plusDiscount + "% off (10% at first, 20% from their third month); Roblox covers the discount, so you earn the same · Plus price rounded to the nearest Robux" : "");
     }
@@ -167,13 +163,6 @@
     syncPlusPills();
     taxPriceIn.addEventListener("input", () => { taxLastEdited = "price"; updateTax(); });
     taxNetIn.addEventListener("input", () => { taxLastEdited = "net"; updateTax(); });
-    document.getElementById("t-taxTable").addEventListener("click", e => {
-        const row = e.target.closest("[data-net]");
-        if (!row) return;
-        taxNetIn.value = row.dataset.net;
-        taxLastEdited = "net";
-        updateTax();
-    });
     updateTax();
 
     // ---- Black market check: what a Robux deal is worth vs cashing out through DevEx ----

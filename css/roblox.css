@@ -418,17 +418,6 @@ select.rbx-input { cursor: pointer; }
 .fp-icon img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 12px; }
 
 /* calc extras */
-.roblox-overlay .tax-table { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 6px 14px; margin-top: 18px; }
-.roblox-overlay .tax-row {
-    display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 10px;
-    font-family: var(--font-mono); font-size: 12px; color: var(--text-main);
-    background: none; border: 1px dashed rgba(255,255,255,0.12); text-align: left; transition: var(--transition);
-}
-.roblox-overlay .tax-row span { white-space: nowrap; }
-.roblox-overlay .tax-row .plus { color: var(--accent); margin-left: 8px; }
-.roblox-overlay .tax-row .plus::before { content: "· "; color: var(--text-muted); }
-.roblox-overlay button.tax-row:hover { border-color: rgba(160,196,255,0.5); color: var(--accent); }
-.roblox-overlay .tax-row.head { grid-column: 1 / -1; border: none; color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; padding-bottom: 0; }
 
 .rbx-toast {
     position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); z-index: 2000;
