@@ -115,6 +115,10 @@
     const taxPriceIn = document.getElementById("t-taxPrice");
     const taxNetIn = document.getElementById("t-taxNet");
     let taxLastEdited = "price";
+    // Roblox Plus: subscribers pay 10% less (20% from their third month). Roblox covers it, so the seller's cut is unchanged
+    let plusDiscount = 20;
+    try { const saved = localStorage.getItem("plusDiscount"); if (["0", "10", "20"].includes(saved)) plusDiscount = Number(saved); } catch (e) {}
+    const plusPrice = price => Math.round(price * (1 - plusDiscount / 100));
     const rbx = n => Math.round(n).toLocaleString("en-GB") + " R$";
     const netOf = price => Math.floor(price * TAX_KEEP);
     const priceFor = net => {
@@ -134,24 +138,31 @@
         }
         const price = Math.max(0, Math.floor(Number(taxPriceIn.value) || 0));
         const net = netOf(price);
-        document.getElementById("t-taxResult").innerHTML = [
+        const tiles = [
             { label: "You Receive", value: rbx(net) },
-            { label: "Roblox Takes", value: rbx(price - net) },
-            { label: "Buyer Pays", value: rbx(price) }
-        ].map(t => `<div class="devex-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`).join("");
-        document.getElementById("t-taxTable").innerHTML = '<div class="tax-row head"><span>To receive</span><span>Set price to</span></div>'
-            + [100, 500, 1000, 2500, 5000, 10000, 25000, 100000].map(n => `<button class="tax-row" data-net="${n}"><span>${rbx(n)}</span><span>${rbx(priceFor(n))}</span></button>`).join("");
-        document.getElementById("t-taxNote").textContent = "30% marketplace fee on game passes, dev products and items · earnings are rounded down · pending for a few days before they land";
+            { label: "Roblox Takes", value: rbx(price - net) }
+        ];
+        if (plusDiscount) {
+            tiles.push({ label: "Plus Buyer Pays", value: rbx(plusPrice(price)) });
+            tiles.push({ label: "List Price", value: rbx(price) });
+        } else {
+            tiles.push({ label: "Buyer Pays", value: rbx(price) });
+        }
+        document.getElementById("t-taxResult").innerHTML = tiles.map(t => `<div class="devex-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`).join("");
+        document.getElementById("t-taxNote").textContent = "30% marketplace fee on game passes, dev products and items · earnings are rounded down · pending for a few days before they land"
+            + (plusDiscount ? " · Roblox Plus subscribers get " + plusDiscount + "% off (10% at first, 20% from their third month); Roblox covers the discount, so you earn the same · Plus price rounded to the nearest Robux" : "");
     }
+    const plusPills = document.querySelectorAll("#t-plusDiscount .range-pill");
+    const syncPlusPills = () => plusPills.forEach(b => b.classList.toggle("active", Number(b.dataset.discount) === plusDiscount));
+    plusPills.forEach(btn => btn.addEventListener("click", () => {
+        plusDiscount = Number(btn.dataset.discount);
+        try { localStorage.setItem("plusDiscount", String(plusDiscount)); } catch (e) {}
+        syncPlusPills();
+        updateTax();
+    }));
+    syncPlusPills();
     taxPriceIn.addEventListener("input", () => { taxLastEdited = "price"; updateTax(); });
     taxNetIn.addEventListener("input", () => { taxLastEdited = "net"; updateTax(); });
-    document.getElementById("t-taxTable").addEventListener("click", e => {
-        const row = e.target.closest("[data-net]");
-        if (!row) return;
-        taxNetIn.value = row.dataset.net;
-        taxLastEdited = "net";
-        updateTax();
-    });
     updateTax();
 
     // ---- Black market check: what a Robux deal is worth vs cashing out through DevEx ----
