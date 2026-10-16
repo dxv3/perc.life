@@ -94,6 +94,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!analyser) {
             analyser = audioCtx.createAnalyser();
             analyser.fftSize = 256;
+            // less smoothing keeps kicks sharp; a higher ceiling stops loud bass pinning every bin at 255
+            analyser.smoothingTimeConstant = 0.5;
+            analyser.maxDecibels = -10;
             dataArray = new Uint8Array(analyser.frequencyBinCount);
         }
         if (!source && audioInstance) {
@@ -103,12 +106,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Beat detection: flash when the bass jumps above its recent level, not whenever it's loud, so
+    // bass-heavy songs still pulse instead of staying lit. Tuned against assets/music: ~2 flashes/s, lit ~23% of the time.
+    const BEAT_JUMP = 10;      // bass must rise this far (0-255 scale) above its running level
+    const BEAT_FLOOR = 50;     // ignore near-silence
+    const BEAT_GAP_MS = 180;   // at most one flash per kick
+    const BEAT_HOLD_MS = 110;  // how long a flash stays on
+    let bassLevel = 0;
+    let lastSample = 0;
+    let lastBeat = -Infinity;
+    let flashUntil = 0;
+    let flashOn = null;
+
     function renderBass() {
         if (!bassVisualsActive) return;
         animationFrameId = requestAnimationFrame(renderBass);
         // page is hidden behind the Roblox overlay: skip the flashes so they don't restyle the whole document
-        if (document.body.classList.contains("overlay-open")) return;
-        
+        if (document.body.classList.contains("overlay-open")) { flashOn = null; return; }
+        // sample at ~60 fps so the running level behaves the same on 120 Hz screens
+        const now = performance.now();
+        if (now - lastSample < 15) return;
+        lastSample = now;
+
         analyser.getByteFrequencyData(dataArray);
 
         let sum = 0;
@@ -118,10 +137,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const avgBass = sum / bassBins;
 
+        if (avgBass > BEAT_FLOOR && avgBass - bassLevel > BEAT_JUMP && now - lastBeat > BEAT_GAP_MS) {
+            lastBeat = now;
+            flashUntil = now + BEAT_HOLD_MS;
+        }
+        bassLevel += (avgBass - bassLevel) * 0.08;
+
+        const on = now < flashUntil;
+        if (on === flashOn) return;
+        flashOn = on;
+
         const pfpContainer = document.querySelector(".pfp-container");
         const panel = document.getElementById("main-panel");
-        
-        if (avgBass > 180) {
+
+        if (on) {
             document.body.classList.add("bass-flash-bg");
             pfpContainer.style.boxShadow = "0 0 60px var(--accent)";
             pfpContainer.style.transform = "scale(1.08)";
@@ -223,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
         visualizer.classList.add("inactive");
         spinDisc.classList.remove("active");
         bassVisualsActive = false;
+        flashOn = null;
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
         document.body.classList.remove("bass-flash-bg");
