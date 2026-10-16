@@ -163,13 +163,14 @@
             if (!secCount) return;
             const placed = new Map(); // "s:i" -> mine(k)
             const s0 = clamp(slot.s, 0, secCount - 1);
+            // spreading compares thumbnails, so it only applies where thumbnails show; icon-only pages get the game once
+            const thumbSections = lay.sections.map((_, s) => s).filter(s => lay.sections[s].kind === "thumb");
             if (variants.length) {
-                if (st.spread && variants.length > 1) {
-                    // every variant gets its own fully visible tile, in sections that show thumbnails when the page has any
+                if (st.spread && variants.length > 1 && thumbSections.length) {
+                    // every variant gets its own fully visible tile
                     const visibleTiles = sec => sec.tiles.map((t, i) => i).filter(i => !sec.tiles[i].cut);
-                    let targets = lay.sections.map((_, s) => s).filter(s => visibleTiles(lay.sections[s]).length);
-                    if (targets.some(s => lay.sections[s].kind === "thumb")) targets = targets.filter(s => lay.sections[s].kind === "thumb");
-                    if (!targets.length) targets = lay.sections.map((_, s) => s).filter(s => lay.sections[s].tiles.length);
+                    let targets = thumbSections.filter(s => visibleTiles(lay.sections[s]).length);
+                    if (!targets.length) targets = thumbSections;
                     const start = Math.max(0, targets.indexOf(s0));
                     variants.forEach((_, k) => {
                         const s = targets[(start + k) % targets.length];
