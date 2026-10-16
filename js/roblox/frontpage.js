@@ -127,11 +127,12 @@
                 const visible = partialCols || cols;
                 const w = (CW - gap * (Math.ceil(visible) - 1)) / visible;
                 const h = kind === "thumb" ? w * 9 / 16 : w;
-                const sec = { title, kind, titleY: y, tiles: [] };
+                const sec = { title, kind, cols, titleY: y, tiles: [] };
                 y += titleH;
                 for (let r = 0; r < maxRows && y < bottom; r++) {
                     const n = partialCols ? Math.ceil(partialCols) : cols;
-                    for (let c = 0; c < n; c++) sec.tiles.push({ x: left + c * (w + gap), y, w, h });
+                    // cut: the peeking column, or a row running off the bottom
+                    for (let c = 0; c < n; c++) sec.tiles.push({ x: left + c * (w + gap), y, w, h, cut: c >= Math.floor(visible) || y + h > bottom });
                     y += h + textH + gap;
                 }
                 y += mobile ? 6 : 14;
@@ -164,11 +165,24 @@
             const s0 = clamp(slot.s, 0, secCount - 1);
             if (variants.length) {
                 if (st.spread && variants.length > 1) {
+                    // every variant gets its own fully visible tile, in sections that show thumbnails when the page has any
+                    const visibleTiles = sec => sec.tiles.map((t, i) => i).filter(i => !sec.tiles[i].cut);
+                    let targets = lay.sections.map((_, s) => s).filter(s => visibleTiles(lay.sections[s]).length);
+                    if (targets.some(s => lay.sections[s].kind === "thumb")) targets = targets.filter(s => lay.sections[s].kind === "thumb");
+                    if (!targets.length) targets = lay.sections.map((_, s) => s).filter(s => lay.sections[s].tiles.length);
+                    const start = Math.max(0, targets.indexOf(s0));
                     variants.forEach((_, k) => {
-                        const s = (s0 + k) % secCount;
+                        const s = targets[(start + k) % targets.length];
                         const sec = lay.sections[s];
-                        let i = clamp(slot.i, 0, sec.tiles.length - 1);
-                        while (placed.has(s + ":" + i) && i < sec.tiles.length - 1) i++;
+                        const free = visibleTiles(sec).length ? visibleTiles(sec) : sec.tiles.map((t, i) => i);
+                        // further variants in the same section step diagonally (one row down, one column over)
+                        const round = Math.floor(k / targets.length);
+                        const from = free.indexOf(clamp(slot.i, 0, sec.tiles.length - 1));
+                        let j = ((from < 0 ? 0 : from) + round * (sec.cols + 1)) % free.length;
+                        for (let n = 0; n < free.length && placed.has(s + ":" + free[j]); n++) j = (j + 1) % free.length;
+                        let i = free[j];
+                        // more variants than visible tiles: a half-visible tile beats hiding one under another
+                        if (placed.has(s + ":" + i)) i = Math.max(0, sec.tiles.findIndex((t, x) => !placed.has(s + ":" + x)));
                         placed.set(s + ":" + i, mine(k));
                     });
                 } else {
