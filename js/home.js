@@ -205,13 +205,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    const MAX_VOLUME = 0.2; // music fades in to this
+
     function fadeInAudio() {
         let vol = 0;
         audioInstance.volume = vol;
         const fadeInt = setInterval(() => {
-            if (vol < 0.3) {
+            if (vol < MAX_VOLUME) {
                 vol += 0.02;
-                audioInstance.volume = Math.min(vol, 0.3);
+                audioInstance.volume = Math.min(vol, MAX_VOLUME);
             } else {
                 clearInterval(fadeInt);
             }
