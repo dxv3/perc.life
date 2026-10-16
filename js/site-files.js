@@ -12,7 +12,6 @@ window.siteFiles = {
     "Boosted_spotdown.org.mp3",
     "Boys Don't Cry_spotdown.org.mp3",
     "Clint Eastwood_spotdown.org.mp3",
-    "David_spotdown.org.mp3",
     "Dog_spotdown.org.mp3",
     "EAT MY D_spotdown.org.mp3",
     "Flexing All Summer_spotdown.org.mp3",
