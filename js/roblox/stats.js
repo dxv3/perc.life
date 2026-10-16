@@ -4,6 +4,7 @@
     if (!overlay) return;
 
     const STATS_URL = "/tracking/api/stats";
+    const GAMES_URL = "/tracking/api/games"; // list lives in netlify/lib/games.mjs; the first game is the default
     const REFRESH_MS = 5 * 60 * 1000;
     const TIMEFRAMES = [
         { key: "1h", label: "1H", ms: 3600e3 },
@@ -41,6 +42,9 @@
         return { text: "— 0% · 24h", cls: "flat" };
     };
 
+    let games = [];
+    let activeGame = null;
+    let gameSwitchBuilt = false;
     let allData = [];
     let activeRange = { type: "preset", key: "90d" };
     let charts = null;
@@ -95,6 +99,29 @@
             setActiveRangeKey("custom");
             applyRange();
         });
+    }
+
+    function renderGameSwitch() {
+        if (gameSwitchBuilt) return;
+        gameSwitchBuilt = true;
+        const el = document.getElementById("t-gameSwitch");
+        el.innerHTML = games.map(g => `<button class="range-pill" data-universe="${g.universeId}">${g.name}</button>`).join("");
+        el.querySelectorAll(".range-pill").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const game = games.find(g => String(g.universeId) === btn.dataset.universe);
+                if (!game || game === activeGame) return;
+                activeGame = game;
+                updateGameSwitch();
+                document.getElementById("t-updated").textContent = "Loading…";
+                refresh();
+            });
+        });
+        updateGameSwitch();
+    }
+
+    function updateGameSwitch() {
+        overlay.querySelectorAll("#t-gameSwitch .range-pill").forEach(b => b.classList.toggle("active", b.dataset.universe === String(activeGame.universeId)));
+        document.getElementById("t-playLink").href = activeGame.url;
     }
 
     function filterByRange(data) {
@@ -207,6 +234,10 @@
         allData = data;
         if (!data.length) {
             document.getElementById("t-statsGrid").innerHTML = '<div class="empty">no data yet — check back after the next poll cycle</div>';
+            document.getElementById("t-updated").textContent = "Waiting for first snapshot";
+            document.getElementById("t-rangeLabel").textContent = "";
+            document.getElementById("t-historyTable").innerHTML = "";
+            if (charts) chartDefs.forEach(({ key }) => { charts[key].data.labels = []; charts[key].data.datasets[0].data = []; charts[key].update("none"); });
             return;
         }
         const latest = data[data.length - 1];
@@ -223,11 +254,25 @@
     }
 
     function refresh() {
-        fetch(STATS_URL).then(r => r.json()).then(render).catch(err => console.error("tracking refresh failed", err));
+        const game = activeGame;
+        if (!game) return;
+        fetch(STATS_URL + "?universeId=" + game.universeId)
+            .then(r => r.json())
+            .then(data => { if (game === activeGame) render(data); })
+            .catch(err => console.error("tracking refresh failed", err));
+    }
+
+    function loadGames() {
+        if (games.length) return Promise.resolve();
+        return fetch(GAMES_URL).then(r => r.json()).then(list => {
+            games = list;
+            activeGame = games[0];
+            renderGameSwitch();
+        });
     }
 
     function initTrackingView() {
-        refresh();
+        loadGames().then(refresh).catch(err => console.error("tracking games load failed", err));
         if (refreshTimer) clearInterval(refreshTimer);
         refreshTimer = setInterval(refresh, REFRESH_MS);
     }
