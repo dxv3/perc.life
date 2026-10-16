@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let analyser;
     let dataArray;
     let source;
+    let gainNode;
     let bassVisualsActive = false;
     let animationFrameId;
 
@@ -101,8 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (!source && audioInstance) {
             source = audioCtx.createMediaElementSource(audioInstance);
+            // volume and mute live on a gain node: once audio is routed through Web Audio,
+            // some browsers (Safari) ignore audio.volume and it plays at full blast.
+            // The analyser sits before it, so the bass effects don't depend on volume.
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0;
             source.connect(analyser);
-            analyser.connect(audioCtx.destination);
+            analyser.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            audioInstance.volume = 1;
         }
     }
 
@@ -206,14 +214,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const MAX_VOLUME = 0.2; // music fades in to this
+    let volume = 0;
+    let fadeInt = null;
+
+    function setVolume(v) {
+        volume = v;
+        const out = isMuted ? 0 : v;
+        if (gainNode) gainNode.gain.value = out;
+        else if (audioInstance) audioInstance.volume = out;
+    }
 
     function fadeInAudio() {
+        clearInterval(fadeInt); // skipping tracks quickly shouldn't leave two fades fighting
         let vol = 0;
-        audioInstance.volume = vol;
-        const fadeInt = setInterval(() => {
+        setVolume(vol);
+        fadeInt = setInterval(() => {
             if (vol < MAX_VOLUME) {
                 vol += 0.02;
-                audioInstance.volume = Math.min(vol, MAX_VOLUME);
+                setVolume(Math.min(vol, MAX_VOLUME));
             } else {
                 clearInterval(fadeInt);
             }
@@ -229,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function toggleMute() {
         if (!audioInstance) return;
         isMuted = !isMuted;
-        audioInstance.muted = isMuted;
+        setVolume(volume);
         
         if (isMuted) {
             stopVisuals();
