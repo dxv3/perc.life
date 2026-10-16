@@ -646,6 +646,8 @@
                 const k = Number(del.dataset.del);
                 iconAuto.delete(variants[k].id);
                 variants.splice(k, 1);
+                if (k < st.active) st.active--;
+                saveState();
                 renderVariants();
                 persistImages();
                 schedule();
@@ -747,6 +749,7 @@
                 });
         }
 
+        const savedActive = st.active; // the first render runs before saved thumbnails load and clamps st.active
         dropTarget(root, addFiles);
         syncControls();
         renderVariants();
@@ -758,6 +761,7 @@
                 try { variants.push(await assetFromBlob(blob)); } catch (e) {}
             }
             if (saved.icon) { try { icon = await assetFromBlob(saved.icon); } catch (e) {} }
+            st.active = clamp(savedActive, 0, Math.max(0, variants.length - 1));
             renderVariants();
             schedule();
         });
