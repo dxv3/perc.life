@@ -149,7 +149,7 @@
             return;
         }
         renderCharts(filtered);
-        const peak = Math.max(...filtered.map(d => d.playing));
+        const peak = filtered.reduce((m, d) => Math.max(m, d.playing), 0); // spreading 65k+ args throws in Safari
         rangeLabel.textContent = filtered.length + " snapshots shown · peak " + fmt(peak) + " players · " + allData.length + " total · every 5 min";
     }
 
@@ -241,7 +241,8 @@
             return;
         }
         const latest = data[data.length - 1];
-        const dayAgo = data.find(d => new Date(latest.timestamp) - new Date(d.timestamp) >= 86400000) || data[0];
+        // newest snapshot at least a day old; none yet (game tracked < 24h) shows N/A
+        const dayAgo = data.findLast(d => new Date(latest.timestamp) - new Date(d.timestamp) >= 86400000) || {};
 
         document.getElementById("t-updated").textContent = "Last updated " + new Date(latest.timestamp).toLocaleString();
 

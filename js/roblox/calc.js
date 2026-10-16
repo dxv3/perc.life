@@ -120,7 +120,7 @@
     try { const saved = localStorage.getItem("plusDiscount"); if (["0", "10", "20"].includes(saved)) plusDiscount = Number(saved); } catch (e) {}
     const plusPrice = price => Math.round(price * (1 - plusDiscount / 100));
     const rbx = n => Math.round(n).toLocaleString("en-GB") + " R$";
-    const netOf = price => Math.floor(price * TAX_KEEP);
+    const netOf = price => Math.floor(price * 7 / 10); // whole-number maths: price * 0.7 drifts below (90 * 0.7 = 62.99…)
     const priceFor = net => {
         let p = Math.ceil(net / TAX_KEEP);
         while (p > 0 && netOf(p - 1) >= net) p--;
