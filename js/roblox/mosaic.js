@@ -243,7 +243,11 @@
         }
 
         async function addFiles(files) {
-            try { addAssets(await Promise.all(files.map(assetFromBlob))); } catch (e) { fail(e); }
+            try {
+                const list = await Promise.all(files.map(assetFromBlob));
+                await restored; // otherwise the saved mosaic lands on top of these
+                addAssets(list);
+            } catch (e) { fail(e); }
         }
 
         async function fillSlot(i, file) {
@@ -485,8 +489,8 @@
         renderPresets();
         renderBoards();
         render();
-        idb.get("mosaic").then(loadState);
+        const restored = idb.get("mosaic").then(loadState).catch(() => {});
 
-        tools.mosaic = { addFiles, addAsset: a => addAssets([a]) };
+        tools.mosaic = { addFiles, addAsset: a => restored.then(() => addAssets([a])) };
     })();
 })();

@@ -248,12 +248,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 bgVideo.style.display = "block";
                 bgVideo.src = bgPath;
                 bgVideo.volume = 0;
-                let p = bgVideo.play();
-                if (p !== undefined) {
-                    p.then(() => {
-                        bgVideo.classList.add("active");
-                    }).catch(() => {});
-                }
+                const startVideo = () => bgVideo.play().then(() => bgVideo.classList.add("active")).catch(() => {});
+                // landed on /roblox: hold the video until the overlay closes instead of playing it hidden
+                if (document.body.classList.contains("overlay-open")) document.addEventListener("roblox:close", startVideo, { once: true });
+                else startVideo();
             } else if (rBg.endsWith('.gif')) {
                 bgVideo.style.display = "none";
                 bgImg.style.display = "block";
@@ -273,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const charContainer = document.getElementById("character-container");
         if(charContainer) charContainer.classList.add("show");
         
+        initAudio(); // the analyser can only tap the audio element once it exists
         initAudioContext();
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         

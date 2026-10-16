@@ -662,6 +662,7 @@
         });
 
         async function addVariant(asset) {
+            await restored;
             if (variants.length >= 4) variants.pop();
             variants.push(asset);
             st.active = variants.length - 1;
@@ -671,6 +672,7 @@
             schedule();
         }
         async function setIcon(asset) {
+            await restored;
             icon = asset;
             renderVariants();
             persistImages();
@@ -755,7 +757,8 @@
         renderVariants();
         if (document.fonts) document.fonts.load("600 16px Outfit").then(schedule).catch(() => {});
 
-        idb.get("frontpage").then(async saved => {
+        // adding images waits for this, so saved ones never land on top of new ones
+        const restored = idb.get("frontpage").then(async saved => {
             if (!saved) return;
             for (const blob of saved.variants || []) {
                 try { variants.push(await assetFromBlob(blob)); } catch (e) {}
@@ -764,7 +767,7 @@
             st.active = clamp(savedActive, 0, Math.max(0, variants.length - 1));
             renderVariants();
             schedule();
-        });
+        }).catch(() => {});
 
         let feedRequested = false;
         tools.frontpage = {
